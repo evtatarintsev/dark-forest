@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тёмный лес</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;800&family=Courier+Prime&display=swap');
+
+  :root{
+    --bg: #05070a;
+    --panel: #1c1712;
+    --panel-edge: #3a2c1c;
+    --parchment: #d9c9a3;
+    --ember: #e8a33d;
+    --ember-dim: #a5691f;
+    --blood: #8f2a2a;
+    --trust: #d99a3c;
+    --moss: #4c5c3a;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    background:var(--bg);
+    font-family:'Courier Prime', monospace;
+    color:var(--parchment);
+    user-select:none;
+  }
+  #wrap{
+    position:relative;
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at center, #0d0f0a 0%, #020202 100%);
+  }
+  #stage{
+    position:relative;
+    width:960px; height:600px;
+    max-width:100vw; max-height:100vh;
+    box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 0 2px #000;
+  }
+  canvas{
+    position:absolute; top:0; left:0;
+    width:100%; height:100%;
+    image-rendering:optimizeSpeed;
+  }
+  .hud{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    pointer-events:none;
+    font-family:'Bitter', serif;
+  }
+  .bar-wrap{
+    position:absolute; top:14px; left:14px;
+    background:rgba(10,8,6,0.55);
+    border:1px solid var(--panel-edge);
+    padding:8px 12px;
+    border-radius:3px;
+  }
+  .bar-label{
+    font-size:10px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--parchment); opacity:0.75; margin-bottom:4px;
+  }
+  .hp-bar{ width:180px; height:10px; background:#1a0d0d; border:1px solid #000; position:relative; }
+  .hp-fill{ height:100%; background:linear-gradient(90deg, var(--blood), #c94444); transition:width .15s; }
+
+  .trust-wrap{
+    position:absolute; top:14px; right:14px;
+    background:rgba(10,8,6,0.55);
+    border:1px solid var(--panel-edge);
+    padding:8px 12px;
+    border-radius:3px;
+    text-align:right;
+  }
+  .trust-pips{ display:flex; gap:5px; justify-content:flex-end; margin-top:4px; }
+  .pip{ width:16px; height:16px; border:1px solid var(--ember-dim); background:#1a1108; transform:rotate(45deg); }
+  .pip.on{ background:var(--ember); box-shadow:0 0 8px var(--ember); }
+
+  .quest-banner{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    background:rgba(10,8,6,0.6); border:1px solid var(--panel-edge);
+    padding:6px 18px; font-size:13px; letter-spacing:0.5px;
+    color:var(--ember); white-space:nowrap;
+  }
+
+  .hint{
+    position:absolute; bottom:12px; left:14px;
+    font-size:11px; color:var(--parchment); opacity:0.55;
+    font-family:'Courier Prime', monospace;
+  }
+
+  .dialogue{
+    position:absolute; bottom:0; left:0; width:100%;
+    background:linear-gradient(180deg, transparent, rgba(8,6,4,0.97) 30%);
+    padding:60px 40px 26px 40px;
+    display:none;
+    pointer-events:none;
+  }
+  .dialogue.show{ display:block; }
+  .dialogue-box{
+    max-width:680px; margin:0 auto;
+    background:rgba(15,11,8,0.85);
+    border:1px solid var(--panel-edge);
+    border-radius:4px;
+    padding:16px 20px;
+  }
+  .dialogue-name{
+    font-size:12px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--ember); margin-bottom:8px; font-family:'Bitter',serif; font-weight:800;
+  }
+  .dialogue-text{ font-size:14px; line-height:1.6; color:var(--parchment); }
+  .dialogue-continue{
+    margin-top:10px; font-size:10px; color:var(--parchment); opacity:0.5; letter-spacing:1px;
+  }
+
+  .overlay{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background:rgba(2,2,2,0.92);
+    display:none; align-items:center; justify-content:center; flex-direction:column;
+    text-align:center; z-index:20;
+  }
+  .overlay.show{ display:flex; }
+  .overlay h1{
+    font-family:'Bitter',serif; font-size:34px; color:var(--ember);
+    letter-spacing:3px; text-transform:uppercase; margin-bottom:14px;
+    text-shadow:0 0 20px rgba(232,163,61,0.4);
+  }
+  .overlay p{ max-width:480px; font-size:14px; line-height:1.7; color:var(--parchment); opacity:0.85; margin-bottom:24px;}
+  .overlay button{
+    pointer-events:auto;
+    background:var(--panel); border:1px solid var(--ember-dim); color:var(--ember);
+    font-family:'Bitter',serif; font-weight:600; letter-spacing:2px; text-transform:uppercase;
+    padding:12px 28px; font-size:12px; cursor:pointer; border-radius:2px;
+  }
+  .overlay button:hover{ background:#2a2015; box-shadow:0 0 14px rgba(232,163,61,0.3); }
+
+  #startOverlay{ z-index:30; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <canvas id="game" width="960" height="600"></canvas>
+    <div class="hud">
+      <div class="bar-wrap">
+        <div class="bar-label">Жизнь</div>
+        <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
+        <div class="bar-label" style="margin-top:8px;">Спринт</div>
+        <div class="hp-bar" id="staminaBar"><div class="hp-fill" id="staminaFill" style="width:100%; background:linear-gradient(90deg, #6b7c4a, #9fb86a);"></div></div>
+      </div>
+      <div class="trust-wrap">
+        <div class="bar-label">Доверие охотника</div>
+        <div class="trust-pips" id="trustPips">
+          <div class="pip" data-i="0"></div>
+          <div class="pip" data-i="1"></div>
+          <div class="pip" data-i="2"></div>
+        </div>
+      </div>
+      <div class="quest-banner" id="questBanner">Очнись...</div>
+      <div class="hint">WASD/стрелки — идти &nbsp;•&nbsp; SHIFT — спринт &nbsp;•&nbsp; E — говорить &nbsp;•&nbsp; ПРОБЕЛ — атаковать</div>
+
+      <div class="dialogue" id="dialogue">
+        <div class="dialogue-box">
+          <div class="dialogue-name" id="dialogueName">Охотник</div>
+          <div class="dialogue-text" id="dialogueText">...</div>
+          <div class="dialogue-continue">[ E — продолжить ]</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay show" id="startOverlay">
+      <h1>Тёмный лес</h1>
+      <p>Самолёт разбился среди чёрных деревьев. Ты выжил — едва.<br>
+      Где-то рядом горит одинокий костёр. У огня сидит человек,
+      который знает этот лес лучше, чем себя самого.<br><br>
+      Заслужи его доверие. Может быть, тогда ты выберешься живым.</p>
+      <button onclick="startGame()">Очнуться</button>
+    </div>
+
+    <div class="overlay" id="winOverlay">
+      <h1>Ты выбрался</h1>
+      <p id="winText"></p>
+      <button onclick="location.reload()">Играть снова</button>
+    </div>
+
+    <div class="overlay" id="loseOverlay">
+      <h1>Лес забрал тебя</h1>
+      <p>Тьма сомкнулась быстрее, чем ты успел выйти к свету.</p>
+      <button onclick="location.reload()">Попробовать снова</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// ---------- UTIL ----------
+function dist(ax,ay,bx,by){ return Math.hypot(ax-bx, ay-by); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+function rand(a,b){ return a + Math.random()*(b-a); }
+
+// ---------- WORLD ----------
+const player = { x:110, y:300, r:13, hp:100, maxhp:100, speed:2.6, attackCd:0, facing:1,
+  stamina:5, maxStamina:5, sprinting:false };
+const hunter = { x:840, y:300, r:16, interactR:55 };
+const campfire = { x:800, y:330, flick:0 };
+const exitGate = { x:930, y:300, r:34, unlocked:false };
+
+let trust = 0;
+let stage = 'intro'; // intro -> firewood -> wolves -> escort -> done
+let dialogueOpen = false;
+let dialogueQueue = [];
+let dialogueIndex = 0;
+let eDown=false, eWasDown=false, spaceDown=false, spaceWasDown=false;
+let time = 0;
+let started = false;
+
+// Trees (obstacles) - fixed layout so it's fair & tested
+const trees = [];
+(function genTrees(){
+  const forbidden = [ [110,300,90], [840,300,140], [930,300,90] ];
+  let attempts=0;
+  while(trees.length < 46 && attempts < 2000){
+    attempts++;
+    const x = rand(30, W-30), y = rand(30, H-30);
+    let ok = true;
+    for(const f of forbidden){ if(dist(x,y,f[0],f[1]) < f[2]) { ok=false; break; } }
+    if(ok){
+      for(const t of trees){ if(dist(x,y,t.x,t.y) < 46){ ok=false; break; } }
+    }
+    if(ok) trees.push({x,y,r:rand(14,22), sway:rand(0,6.28)});
+  }
+})();
+
+// Random spot generator - avoids trees, player start, hunter camp, exit, and already-placed points
+function randomFreeSpot(avoidR, existing){
+  existing = existing || [];
+  let attempts = 0;
+  while(attempts < 600){
+    attempts++;
+    const x = rand(40, W-40), y = rand(40, H-40);
+    if(dist(x,y,110,300) < 130) continue;      // player spawn
+    if(dist(x,y,840,300) < 160) continue;      // hunter camp / campfire
+    if(dist(x,y,930,300) < 110) continue;      // exit gate
+    if(collidesTrees(x,y,avoidR)) continue;
+    let tooClose = false;
+    for(const p of existing){ if(dist(x,y,p.x,p.y) < 90){ tooClose = true; break; } }
+    if(tooClose) continue;
+    return {x,y};
+  }
+  return {x: rand(150,W-150), y: rand(60,H-60)}; // fallback
+}
+
+// Firewood pickups (stage 1) - random position each playthrough
+let firewood = [];
+function spawnFirewood(){
+  firewood = [];
+  const placed = [];
+  for(let i=0;i<3;i++){
+    const s = randomFreeSpot(10, placed);
+    placed.push(s);
+    firewood.push({x:s.x, y:s.y, collected:false, r:6});
+  }
+}
+
+// Wolves (stage 2) - random position each playthrough, hunt the player on sight
+let wolves = [];
+function spawnWolves(){
+  wolves = [];
+  const placed = [];
+  for(let i=0;i<3;i++){
+    const s = randomFreeSpot(16, placed);
+    placed.push(s);
+    wolves.push({
+      x:s.x, y:s.y, hp:30, maxhp:30,
+      speed: rand(1.4,1.8), r:13, alive:true, hitCd:0,
+      wanderA: rand(0,6.28)
+    });
+  }
+}
+let wolvesDefeated = 0;
+
+// ---------- DIALOGUE ----------
+const DIALOGUE = {
+  first: [
+    "...Эй. Эй! Открой глаза.",
+    "Тебе повезло — упал в мягкую часть леса. Другим так не повезло.",
+    "Меня зовут Гром. Я здесь охочусь уже пятнадцать лет.",
+    "Лес этот не любит чужаков. Но и одному тебе не выжить.",
+    "Помоги мне — и, может, я выведу тебя к дороге. Начнём с малого: костёр гаснет. Принеси хворост — три вязанки, я видел их по лесу."
+  ],
+  firewoodReminder: [
+    "Хворост сам себя не найдёт. Ищи по лесу — я подсвечу его в темноте."
+  ],
+  firewoodDone: [
+    "Хорошо. Значит, руки у тебя не только чтобы дрожать.",
+    "Костёр не даст нам замёрзнуть, но не отпугнёт зверей.",
+    "Волки почуяли кровь после крушения. Отгони их — покажи, что ты не лёгкая добыча.",
+    "Я буду рядом. Но драться придётся тебе."
+  ],
+  wolvesReminder: [
+    "Волки где-то рядом. Держись на ногах — бей пробелом, когда близко."
+  ],
+  wolvesDone: [
+    "...Не ожидал. Ты дерёшься лучше, чем выглядишь.",
+    "Ладно. Я начинаю тебе верить.",
+    "Есть тропа отсюда — старая, звериная, но верная. Она у восточного края леса.",
+    "Дойди туда сам. Я буду знать, что не ошибся в тебе."
+  ],
+  escortReminder: [
+    "Тропа на востоке, за деревьями. Иди туда — я слежу издалека."
+  ],
+  final: [
+    "Вот она. Свет за деревьями — это не обман, это выход.",
+    "Спасибо, что не сбежал, когда мог. Немногие остаются.",
+    "Иди. Дорога свободна. И... удачи, чужак."
+  ]
+};
+
+function openDialogue(lines){
+  dialogueOpen = true;
+  dialogueQueue = lines.slice();
+  dialogueIndex = 0;
+  document.getElementById('dialogue').classList.add('show');
+  renderDialogueLine();
+}
+function renderDialogueLine(){
+  document.getElementById('dialogueText').textContent = dialogueQueue[dialogueIndex];
+}
+function advanceDialogue(){
+  dialogueIndex++;
+  if(dialogueIndex >= dialogueQueue.length){
+    closeDialogue();
+  } else {
+    renderDialogueLine();
+  }
+}
+function closeDialogue(){
+  dialogueOpen = false;
+  document.getElementById('dialogue').classList.remove('show');
+  onDialogueClosed();
+}
+function onDialogueClosed(){
+  if(stage === 'intro'){
+    stage = 'firewood';
+    spawnFirewood();
+    updateQuestBanner("Найди хворост для костра (0/3)");
+  } else if(stage === 'firewood_done_pending'){
+    stage = 'wolves';
+    spawnWolves();
+    updateQuestBanner("Отгони волков (0/3)");
+  } else if(stage === 'wolves_done_pending'){
+    stage = 'escort';
+    exitGate.unlocked = false;
+    updateQuestBanner("Дойди до тропы на востоке леса");
+  } else if(stage === 'final_pending'){
+    stage = 'done';
+    exitGate.unlocked = true;
+    updateQuestBanner("Тропа открыта — иди на восток");
+  }
+}
+
+function updateQuestBanner(txt){
+  document.getElementById('questBanner').textContent = txt;
+}
+
+// ---------- TRUST ----------
+function setTrust(n){
+  trust = n;
+  document.querySelectorAll('.pip').forEach((p,i)=>{
+    p.classList.toggle('on', i < trust);
+  });
+}
+
+// ---------- INPUT ----------
+const keys = {};
+window.addEventListener('keydown', e=>{
+  keys[e.key.toLowerCase()] = true;
+  if(e.key===' ') e.preventDefault();
+});
+window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+
+function startGame(){
+  document.getElementById('startOverlay').classList.remove('show');
+  started = true;
+  openDialogue(DIALOGUE.first);
+}
+
+// ---------- UPDATE ----------
+function update(dt){
+  time += dt;
+  campfire.flick += dt;
+
+  eDown = !!keys['e'];
+  spaceDown = !!keys[' '];
+
+  // dialogue interaction
+  if(eDown && !eWasDown){
+    if(dialogueOpen){
+      advanceDialogue();
+    } else {
+      tryInteractHunter();
+    }
+  }
+  eWasDown = eDown;
+
+  if(!dialogueOpen && started){
+    // movement
+    let dx=0, dy=0;
+    if(keys['w']||keys['arrowup']) dy -= 1;
+    if(keys['s']||keys['arrowdown']) dy += 1;
+    if(keys['a']||keys['arrowleft']) { dx -= 1; player.facing=-1; }
+    if(keys['d']||keys['arrowright']) { dx += 1; player.facing=1; }
+    const isMoving = (dx !== 0 || dy !== 0);
+    const wantsSprint = !!(keys['shift']);
+
+    if(wantsSprint && isMoving && player.stamina > 0){
+      player.sprinting = true;
+      player.stamina = clamp(player.stamina - dt, 0, player.maxStamina);
+    } else {
+      player.sprinting = false;
+      player.stamina = clamp(player.stamina + dt * 0.6, 0, player.maxStamina); // regen when not sprinting
+    }
+    const curSpeed = player.speed * (player.sprinting ? 1.8 : 1);
+
+    const len = Math.hypot(dx,dy) || 1;
+    const nx = player.x + (dx/len) * curSpeed;
+    const ny = player.y + (dy/len) * curSpeed;
+
+    if(!collidesTrees(nx, player.y, player.r)) player.x = clamp(nx, player.r, W-player.r);
+    if(!collidesTrees(player.x, ny, player.r)) player.y = clamp(ny, player.r, H-player.r);
+
+    // firewood pickup
+    if(stage === 'firewood'){
+      let collectedNow = 0;
+      for(const f of firewood){
+        if(!f.collected && dist(player.x,player.y,f.x,f.y) < player.r+f.r+4){
+          f.collected = true;
+        }
+      }
+      collectedNow = firewood.filter(f=>f.collected).length;
+      updateQuestBanner(`Найди хворост для костра (${collectedNow}/3)`);
+      if(collectedNow >= 3 && stage==='firewood'){
+        stage = 'firewood_waiting';
+        updateQuestBanner("Вернись к охотнику с хворостом");
+      }
+    }
+
+    // wolves logic
+    if(stage === 'wolves' || stage==='wolves_waiting'){
+      updateWolves(dt);
+    }
+
+    // combat
+    if(player.attackCd > 0) player.attackCd -= dt;
+    if(spaceDown && !spaceWasDown && player.attackCd <= 0){
+      doAttack();
+      player.attackCd = 0.35;
+    }
+    spaceWasDown = spaceDown;
+
+    // wolf contact damage
+    for(const w of wolves){
+      if(!w.alive) continue;
+      if(w.hitCd > 0) w.hitCd -= dt;
+      if(dist(player.x,player.y,w.x,w.y) < player.r + w.r - 2 && w.hitCd<=0){
+        player.hp = clamp(player.hp - 8, 0, player.maxhp);
+        w.hitCd = 0.9;
+        updateHpBar();
+        if(player.hp<=0) doLose();
+      }
+    }
+
+    // escort exit check
+    if(stage === 'escort' || stage === 'done'){
+      if(dist(player.x,player.y,exitGate.x,exitGate.y) < exitGate.r){
+        if(stage==='escort'){
+          stage = 'escort_waiting';
+          updateQuestBanner("Ты у тропы. Дождись охотника... (E рядом с ним)");
+        } else if(stage==='done'){
+          doWin();
+        }
+      }
+    }
+  }
+
+  updateHpBar();
+}
+
+function collidesTrees(x,y,r){
+  for(const t of trees){
+    if(dist(x,y,t.x,t.y) < r + t.r*0.7) return true;
+  }
+  return false;
+}
+
+// Tries the desired direction first, then increasingly wide angles to either side,
+// so a wolf sliding along a tree still makes forward progress instead of freezing.
+function moveTowardsAvoiding(entity, tx, ty, speed){
+  const desiredAng = Math.atan2(ty-entity.y, tx-entity.x);
+  const offsets = [0, 0.3, -0.3, 0.6, -0.6, 0.9, -0.9, 1.3, -1.3, 1.8, -1.8, 2.4, -2.4, Math.PI];
+  for(const off of offsets){
+    const ang = desiredAng + off;
+    const nx = entity.x + Math.cos(ang)*speed;
+    const ny = entity.y + Math.sin(ang)*speed;
+    if(!collidesTrees(nx, ny, entity.r)){
+      entity.x = clamp(nx, entity.r, W-entity.r);
+      entity.y = clamp(ny, entity.r, H-entity.r);
+      return true;
+    }
+  }
+  return false; // fully boxed in - stays put this frame
+}
+
+function updateWolves(dt){
+  const HUNT_RADIUS = 480; // effectively the whole map - wolves actively hunt once spawned
+  for(const w of wolves){
+    if(!w.alive) continue;
+    const d = dist(player.x,player.y,w.x,w.y);
+    let tx,ty, speed = w.speed;
+    if(d < HUNT_RADIUS){
+      tx = player.x; ty = player.y;
+      if(d < 260) speed = w.speed * 1.35; // lunge when close
+    } else {
+      w.wanderA += rand(-0.3,0.3);
+      tx = w.x + Math.cos(w.wanderA)*40;
+      ty = w.y + Math.sin(w.wanderA)*40;
+    }
+    moveTowardsAvoiding(w, tx, ty, speed);
+  }
+}
+
+function doAttack(){
+  let nearest = null, nd = 999;
+  for(const w of wolves){
+    if(!w.alive) continue;
+    const d = dist(player.x,player.y,w.x,w.y);
+    if(d < 42 && d < nd){ nd=d; nearest=w; }
+  }
+  slashEffect = { x:player.x + player.facing*20, y:player.y, t:0.15 };
+  if(nearest){
+    nearest.hp -= 15;
+    if(nearest.hp <= 0){
+      nearest.alive = false;
+      wolvesDefeated++;
+      if(stage==='wolves' || stage==='wolves_waiting'){
+        const remaining = wolves.filter(w=>w.alive).length;
+        updateQuestBanner(`Отгони волков (${wolvesDefeated}/3)`);
+        if(wolvesDefeated >= 3){
+          stage = 'wolves_waiting';
+          updateQuestBanner("Вернись к охотнику");
+        }
+      }
+    }
+  }
+}
+let slashEffect = null;
+
+function tryInteractHunter(){
+  if(dist(player.x,player.y,hunter.x,hunter.y) > hunter.interactR) return;
+  if(stage === 'firewood' || stage==='firewood_waiting_notyet'){
+    openDialogue(DIALOGUE.firewoodReminder);
+  } else if(stage === 'firewood_waiting'){
+    setTrust(1);
+    stage = 'firewood_done_pending';
+    openDialogue(DIALOGUE.firewoodDone);
+  } else if(stage === 'wolves'){
+    openDialogue(DIALOGUE.wolvesReminder);
+  } else if(stage === 'wolves_waiting'){
+    setTrust(2);
+    stage = 'wolves_done_pending';
+    openDialogue(DIALOGUE.wolvesDone);
+  } else if(stage === 'escort'){
+    openDialogue(DIALOGUE.escortReminder);
+  } else if(stage === 'escort_waiting'){
+    setTrust(3);
+    stage = 'final_pending';
+    openDialogue(DIALOGUE.final);
+  } else if(stage === 'intro'){
+    // shouldn't happen, opening handled on start
+  }
+}
+
+function updateHpBar(){
+  document.getElementById('hpFill').style.width = (player.hp/player.maxhp*100)+'%';
+  const staminaFill = document.getElementById('staminaFill');
+  const pct = (player.stamina/player.maxStamina*100);
+  staminaFill.style.width = pct + '%';
+  staminaFill.style.opacity = player.stamina <= 0 ? '0.4' : '1';
+}
+
+function doWin(){
+  started = false;
+  document.getElementById('winText').textContent =
+    trust >= 3
+    ? "Гром вывел тебя из леса. Доверие, которое ты заслужил, спасло вам обоим жизнь."
+    : "Ты выбрался — но так и не узнал, можно ли было доверять охотнику до конца.";
+  document.getElementById('winOverlay').classList.add('show');
+}
+function doLose(){
+  started = false;
+  document.getElementById('loseOverlay').classList.add('show');
+}
+
+// ---------- RENDER ----------
+function render(){
+  ctx.clearRect(0,0,W,H);
+
+  // ground
+  ctx.fillStyle = '#0c120c';
+  ctx.fillRect(0,0,W,H);
+
+  // subtle ground texture patches
+  ctx.fillStyle = 'rgba(20,28,18,0.5)';
+  for(let i=0;i<18;i++){
+    ctx.beginPath();
+    ctx.ellipse((i*137)%W, (i*221)%H, 60,30,0,0,7);
+    ctx.fill();
+  }
+
+  // exit gate glow
+  ctx.save();
+  const gateGlow = exitGate.unlocked ? 1 : 0.15;
+  const grad = ctx.createRadialGradient(exitGate.x,exitGate.y,4,exitGate.x,exitGate.y,exitGate.r+30);
+  grad.addColorStop(0, `rgba(232,163,61,${0.55*gateGlow})`);
+  grad.addColorStop(1, 'rgba(232,163,61,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(exitGate.x-80, exitGate.y-80, 160,160);
+  ctx.restore();
+  ctx.fillStyle = exitGate.unlocked ? '#e8a33d' : '#3a2c1c';
+  ctx.beginPath(); ctx.arc(exitGate.x, exitGate.y, 6, 0, 7); ctx.fill();
+
+  // firewood
+  for(const f of firewood){
+    if(f.collected) continue;
+    ctx.save();
+    ctx.translate(f.x,f.y);
+    ctx.strokeStyle = '#a5691f'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(-7,-3); ctx.lineTo(7,3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-6,3); ctx.lineTo(6,-3); ctx.stroke();
+    ctx.restore();
+  }
+
+  // campfire
+  const fl = Math.sin(campfire.flick*8)*3 + Math.sin(campfire.flick*3.3)*2;
+  const fgrad = ctx.createRadialGradient(campfire.x,campfire.y,2,campfire.x,campfire.y,70+fl);
+  fgrad.addColorStop(0,'rgba(255,180,80,0.55)');
+  fgrad.addColorStop(1,'rgba(255,180,80,0)');
+  ctx.fillStyle = fgrad;
+  ctx.fillRect(campfire.x-100,campfire.y-100,200,200);
+  ctx.fillStyle = '#3a2718';
+  ctx.beginPath(); ctx.arc(campfire.x,campfire.y,14,0,7); ctx.fill();
+  ctx.fillStyle = `rgb(${230+fl},${120+fl*2},40)`;
+  ctx.beginPath(); ctx.ellipse(campfire.x,campfire.y-6,7,12+fl*0.5,0,0,7); ctx.fill();
+
+  // hunter
+  drawPerson(hunter.x, hunter.y, '#5c4a34', '#e8c98a', 1);
+
+  // wolves
+  for(const w of wolves){
+    if(!w.alive) continue;
+    ctx.save();
+    ctx.translate(w.x,w.y);
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.ellipse(0,0,14,9,0,0,7);
+    ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.ellipse(9,-3,4,3,0,0,7); ctx.fill(); // head hint
+    ctx.fillStyle='#c94444';
+    ctx.beginPath(); ctx.arc(11,-4,1.4,0,7); ctx.fill(); // eye
+    ctx.restore();
+    // wolf hp
+    ctx.fillStyle='rgba(0,0,0,0.5)';
+    ctx.fillRect(w.x-14,w.y-20,28,4);
+    ctx.fillStyle='#c94444';
+    ctx.fillRect(w.x-14,w.y-20,28*(w.hp/w.maxhp),4);
+  }
+
+  // trees (drawn after characters partially for canopy overlap feel - back trunks first)
+  for(const t of trees){
+    ctx.save();
+    ctx.translate(t.x,t.y);
+    ctx.fillStyle = '#241c14';
+    ctx.fillRect(-3,-4,6,16);
+    ctx.fillStyle = '#14261a';
+    ctx.beginPath();
+    ctx.arc(0,-8,t.r,0,7);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath();
+    ctx.arc(4,-6,t.r*0.7,0,7);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // player
+  drawPerson(player.x, player.y, '#3d3427', '#d9c9a3', player.facing);
+
+  // slash effect
+  if(slashEffect){
+    slashEffect.t -= 0.02;
+    if(slashEffect.t > 0){
+      ctx.strokeStyle = `rgba(230,230,230,${slashEffect.t*4})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(slashEffect.x, slashEffect.y, 18, -0.6, 0.6);
+      ctx.stroke();
+    } else slashEffect = null;
+  }
+
+  // ---- fog of war / lantern vignette (signature element) ----
+  const flicker = Math.sin(time*9)*4 + Math.sin(time*2.3)*3;
+  const lightR = 150 + flicker;
+  const vgrad = ctx.createRadialGradient(player.x,player.y, 20, player.x,player.y, lightR);
+  vgrad.addColorStop(0, 'rgba(0,0,0,0)');
+  vgrad.addColorStop(0.55, 'rgba(0,0,0,0.15)');
+  vgrad.addColorStop(1, 'rgba(0,0,0,0.94)');
+  ctx.fillStyle = vgrad;
+  ctx.fillRect(0,0,W,H);
+
+  // extra darkness at far corners
+  const cgrad = ctx.createRadialGradient(W/2,H/2, H*0.3, W/2,H/2, H*0.9);
+  cgrad.addColorStop(0,'rgba(0,0,0,0)');
+  cgrad.addColorStop(1,'rgba(0,0,0,0.5)');
+  ctx.fillStyle = cgrad;
+  ctx.fillRect(0,0,W,H);
+}
+
+function drawPerson(x,y,coat,skin,facing){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(facing,1);
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.beginPath(); ctx.ellipse(0,14,11,4,0,0,7); ctx.fill();
+  // body
+  ctx.fillStyle = coat;
+  ctx.beginPath();
+  ctx.moveTo(-9,12); ctx.lineTo(-7,-6); ctx.lineTo(7,-6); ctx.lineTo(9,12);
+  ctx.closePath(); ctx.fill();
+  // head
+  ctx.fillStyle = skin;
+  ctx.beginPath(); ctx.arc(0,-13,7,0,7); ctx.fill();
+  ctx.restore();
+}
+
+// ---------- LOOP ----------
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.05,(now-last)/1000);
+  last = now;
+  if(started) update(dt);
+  else if(dialogueOpen) update(dt); // allow first intro dialogue before movement enabled
+  render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

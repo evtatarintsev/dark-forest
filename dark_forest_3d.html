@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тёмный лес — 3D</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;800&family=Courier+Prime&display=swap');
+
+  :root{
+    --panel-edge: #3a2c1c;
+    --parchment: #d9c9a3;
+    --ember: #e8a33d;
+    --ember-dim: #a5691f;
+    --blood: #8f2a2a;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    background:#020202;
+    font-family:'Courier Prime', monospace;
+    color:var(--parchment);
+    user-select:none;
+  }
+  #wrap{
+    position:relative; width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    background:#000;
+  }
+  #stage{
+    position:relative;
+    width:960px; height:600px;
+    max-width:100vw; max-height:100vh;
+    box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 0 2px #000;
+  }
+  #stage canvas{ position:absolute; top:0; left:0; width:100%; height:100%; display:block; }
+
+  .hud{ position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; font-family:'Bitter', serif; }
+  .bar-wrap{ position:absolute; top:14px; left:14px; background:rgba(10,8,6,0.55); border:1px solid var(--panel-edge); padding:8px 12px; border-radius:3px; }
+  .bar-label{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--parchment); opacity:0.75; margin-bottom:4px; }
+  .hp-bar{ width:180px; height:10px; background:#1a0d0d; border:1px solid #000; position:relative; }
+  .hp-fill{ height:100%; background:linear-gradient(90deg, var(--blood), #c94444); transition:width .15s; }
+
+  .trust-wrap{ position:absolute; top:14px; right:14px; background:rgba(10,8,6,0.55); border:1px solid var(--panel-edge); padding:8px 12px; border-radius:3px; text-align:right; }
+  .trust-pips{ display:flex; gap:5px; justify-content:flex-end; margin-top:4px; }
+  .pip{ width:16px; height:16px; border:1px solid var(--ember-dim); background:#1a1108; transform:rotate(45deg); }
+  .pip.on{ background:var(--ember); box-shadow:0 0 8px var(--ember); }
+
+  .quest-banner{ position:absolute; top:14px; left:50%; transform:translateX(-50%); background:rgba(10,8,6,0.6); border:1px solid var(--panel-edge); padding:6px 18px; font-size:13px; letter-spacing:0.5px; color:var(--ember); white-space:nowrap; }
+  .hint{ position:absolute; bottom:12px; left:14px; font-size:11px; color:var(--parchment); opacity:0.55; font-family:'Courier Prime', monospace; }
+
+  .dialogue{ position:absolute; bottom:0; left:0; width:100%; background:linear-gradient(180deg, transparent, rgba(8,6,4,0.97) 30%); padding:60px 40px 26px 40px; display:none; pointer-events:none; }
+  .dialogue.show{ display:block; }
+  .dialogue-box{ max-width:680px; margin:0 auto; background:rgba(15,11,8,0.85); border:1px solid var(--panel-edge); border-radius:4px; padding:16px 20px; }
+  .dialogue-name{ font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--ember); margin-bottom:8px; font-family:'Bitter',serif; font-weight:800; }
+  .dialogue-text{ font-size:14px; line-height:1.6; color:var(--parchment); }
+  .dialogue-continue{ margin-top:10px; font-size:10px; color:var(--parchment); opacity:0.5; letter-spacing:1px; }
+  .dialogue-choices{ display:none; gap:12px; margin-top:14px; pointer-events:auto; }
+  .choice-btn{
+    font-family:'Bitter',serif; font-weight:600; letter-spacing:1.5px; text-transform:uppercase;
+    font-size:11px; padding:9px 20px; border-radius:2px; cursor:pointer; pointer-events:auto;
+  }
+  .choice-btn.accept{ background:#1c1712; border:1px solid var(--ember); color:var(--ember); }
+  .choice-btn.accept:hover{ background:#2a2015; box-shadow:0 0 14px rgba(232,163,61,0.35); }
+  .choice-btn.decline{ background:#1c1712; border:1px solid #5a3a3a; color:#c98a8a; }
+  .choice-btn.decline:hover{ background:#2a1a1a; box-shadow:0 0 14px rgba(143,42,42,0.35); }
+
+  .overlay{ position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(2,2,2,0.92); display:none; align-items:center; justify-content:center; flex-direction:column; text-align:center; z-index:20; }
+  .overlay.show{ display:flex; }
+  .overlay h1{ font-family:'Bitter',serif; font-size:34px; color:var(--ember); letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; text-shadow:0 0 20px rgba(232,163,61,0.4); }
+  .overlay p{ max-width:480px; font-size:14px; line-height:1.7; color:var(--parchment); opacity:0.85; margin-bottom:24px;}
+  .overlay button{ pointer-events:auto; background:#1c1712; border:1px solid var(--ember-dim); color:var(--ember); font-family:'Bitter',serif; font-weight:600; letter-spacing:2px; text-transform:uppercase; padding:12px 28px; font-size:12px; cursor:pointer; border-radius:2px; }
+  .overlay button:hover{ background:#2a2015; box-shadow:0 0 14px rgba(232,163,61,0.3); }
+
+  .wolf-hp{ position:absolute; width:34px; height:5px; background:rgba(0,0,0,0.55); border:1px solid #000; pointer-events:none; }
+  .wolf-hp-fill{ height:100%; background:#c94444; }
+
+  .quest-menu{ position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(2,2,2,0.75); display:none; align-items:center; justify-content:center; z-index:15; pointer-events:auto; }
+  .quest-menu.show{ display:flex; }
+  .quest-menu-box{ width:520px; max-width:88%; background:rgba(15,11,8,0.95); border:1px solid var(--panel-edge); border-radius:4px; padding:22px 26px; }
+  .quest-menu-title{ font-family:'Bitter',serif; font-weight:800; letter-spacing:3px; text-transform:uppercase; font-size:16px; color:var(--ember); margin-bottom:16px; }
+  .quest-item{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-top:1px solid rgba(58,44,28,0.6); }
+  .quest-item:first-of-type{ border-top:none; }
+  .quest-item-dot{ width:10px; height:10px; border-radius:50%; margin-top:5px; flex-shrink:0; background:#3a2c1c; border:1px solid #5a4530; }
+  .quest-item-dot.active{ background:var(--ember); box-shadow:0 0 8px var(--ember); border-color:var(--ember); }
+  .quest-item-dot.done{ background:#6b8a4a; box-shadow:0 0 6px #6b8a4a; border-color:#6b8a4a; }
+  .quest-item-name{ font-family:'Bitter',serif; font-weight:600; font-size:13px; letter-spacing:0.5px; color:var(--parchment); margin-bottom:3px; }
+  .quest-item.locked .quest-item-name{ opacity:0.45; }
+  .quest-item-desc{ font-size:12px; line-height:1.5; color:var(--parchment); opacity:0.7; }
+  .quest-menu-hint{ margin-top:14px; font-size:10px; color:var(--parchment); opacity:0.5; letter-spacing:1px; text-align:right; }
+  .inv-icon{ font-size:20px; width:26px; text-align:center; flex-shrink:0; margin-top:2px; }
+  .inv-use-btn{ padding:6px 12px; font-size:10px; align-self:center; flex-shrink:0; }
+
+  #loading{ position:absolute; top:0; left:0; width:100%; height:100%; background:#020202; display:flex; align-items:center; justify-content:center; color:var(--ember); font-family:'Bitter',serif; letter-spacing:2px; z-index:40; }
+
+  .toast{
+    position:absolute; bottom:52px; left:50%; transform:translateX(-50%) translateY(10px);
+    background:rgba(10,8,6,0.85); border:1px solid var(--panel-edge); padding:9px 18px;
+    font-size:12px; color:var(--parchment); border-radius:3px; opacity:0; pointer-events:none;
+    transition:opacity .25s, transform .25s; white-space:nowrap;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .drown-warning{
+    position:absolute; top:38%; left:50%; transform:translate(-50%,-50%);
+    font-family:'Bitter',serif; font-weight:800; letter-spacing:2px; text-transform:uppercase;
+    font-size:20px; color:#c94444; text-shadow:0 0 16px rgba(201,68,68,0.8);
+    opacity:0; pointer-events:none; transition:opacity .3s;
+  }
+  .drown-warning.show{ opacity:1; animation:drownPulse 1s ease-in-out infinite; }
+  @keyframes drownPulse{ 0%,100%{ opacity:0.55; } 50%{ opacity:1; } }
+
+  .guide-arrow{
+    position:absolute; bottom:70px; left:50%;
+    transform-origin:50% 50%;
+    transform:translateX(-50%) rotate(0deg);
+    opacity:0.2; pointer-events:none;
+    filter:drop-shadow(0 0 6px rgba(232,163,61,0.65));
+    transition:opacity .3s;
+  }
+  .guide-arrow.hidden{ opacity:0; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <div id="loading">ЗАГРУЗКА ЛЕСА...</div>
+    <div class="hud">
+      <div class="bar-wrap">
+        <div class="bar-label" style="font-size:12px; color:var(--ember); opacity:1; letter-spacing:2px; margin-bottom:8px;">ДЕНЬ <span id="dayNum">1</span> <span id="nightTag" style="color:#c94444; display:none;">• НОЧЬ</span></div>
+        <div class="bar-label">Жизнь</div>
+        <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
+        <div class="bar-label" style="margin-top:8px;">Спринт</div>
+        <div class="hp-bar" id="staminaBar"><div class="hp-fill" id="staminaFill" style="width:100%; background:linear-gradient(90deg, #6b7c4a, #9fb86a);"></div></div>
+      </div>
+      <div class="trust-wrap">
+        <div class="bar-label">Доверие охотника</div>
+        <div class="trust-pips" id="trustPips">
+          <div class="pip" data-i="0"></div>
+          <div class="pip" data-i="1"></div>
+          <div class="pip" data-i="2"></div>
+        </div>
+      </div>
+      <div class="quest-banner" id="questBanner">Очнись...</div>
+      <div class="hint">W/S — вперёд/назад &nbsp;•&nbsp; A/D или ПКМ+мышь — поворот &nbsp;•&nbsp; SHIFT — спринт &nbsp;•&nbsp; E — говорить / верстак &nbsp;•&nbsp; ПРОБЕЛ — атаковать &nbsp;•&nbsp; I — инвентарь &nbsp;•&nbsp; R — травы &nbsp;•&nbsp; T — факел</div>
+
+      <div class="quest-menu" id="questMenu" onclick="if(event.target===this) closeQuestMenu()">
+        <div class="quest-menu-box">
+          <div class="quest-menu-title">Задания</div>
+          <div class="quest-item" id="qItem1">
+            <div class="quest-item-dot" id="qDot1"></div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Хворост для костра</div>
+              <div class="quest-item-desc" id="qDesc1">Охотник ещё не рассказал об этом.</div>
+            </div>
+          </div>
+          <div class="quest-item" id="qItem2">
+            <div class="quest-item-dot" id="qDot2"></div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Отгони волков</div>
+              <div class="quest-item-desc" id="qDesc2">Задание пока не выдано.</div>
+            </div>
+          </div>
+          <div class="quest-item" id="qItem3">
+            <div class="quest-item-dot" id="qDot3"></div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Найди тропу из леса</div>
+              <div class="quest-item-desc" id="qDesc3">Задание пока не выдано.</div>
+            </div>
+          </div>
+          <div class="quest-menu-hint">[ E или клик в стороне — закрыть ]</div>
+        </div>
+      </div>
+
+      <div class="quest-menu" id="invMenu" onclick="if(event.target===this) closeInventory()">
+        <div class="quest-menu-box">
+          <div class="quest-menu-title">Инвентарь</div>
+          <div class="quest-item">
+            <div class="inv-icon">🌿</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Лечебные травы <span id="invHerbCount">(0)</span></div>
+              <div class="quest-item-desc">Лечат на 25 здоровья. Использовать — клавиша R.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="invUseHerbBtn" onclick="useHerb()">Исп.</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🪵</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Хворост <span id="invWoodCount">(0/3)</span></div>
+              <div class="quest-item-desc">Отнеси охотнику, чтобы разжечь костёр.</div>
+            </div>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🐺</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Волчьи клыки <span id="invFangCount">(0)</span></div>
+              <div class="quest-item-desc">Трофеи с побеждённых волков.</div>
+            </div>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🐾</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Коготь медведя <span id="invClawCount">(0)</span></div>
+              <div class="quest-item-desc">Редкий трофей — если справишься с медведем.</div>
+            </div>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🪄</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Палки <span id="invSticksCount">(0)</span></div>
+              <div class="quest-item-desc">Материал для верстака у лагеря охотника.</div>
+            </div>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">⚔️</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Оружие: <span id="invWeaponName">Кулаки</span></div>
+              <div class="quest-item-desc">Скрафти лучшее на верстаке у лагеря.</div>
+            </div>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🔥</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Факелы <span id="invTorchCount">(0)</span></div>
+              <div class="quest-item-desc" id="invTorchDesc">Ярче светит. Зажечь — клавиша T.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="invUseTorchBtn" onclick="useTorch()">Заж.</button>
+          </div>
+          <div class="quest-menu-hint">[ I или клик в стороне — закрыть ]</div>
+        </div>
+      </div>
+
+      <div class="quest-menu" id="workbenchMenu" onclick="if(event.target===this) closeWorkbench()">
+        <div class="quest-menu-box">
+          <div class="quest-menu-title">Верстак</div>
+          <div class="quest-item">
+            <div class="inv-icon">🪵</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Сделать палки</div>
+              <div class="quest-item-desc">Есть: <span id="wbSticks">0</span> палок · Клыков: <span id="wbFangs">0</span></div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" onclick="craftSticks()">+20</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🔪</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Нож</div>
+              <div class="quest-item-desc">10 палок + 1 клык. Бьёт быстрее, но слабее.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="wbKnifeBtn" onclick="craftKnife()">Сделать</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🪓</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Топор</div>
+              <div class="quest-item-desc">20 палок + 3 клыка. Медленнее, но куда сильнее.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="wbAxeBtn" onclick="craftAxe()">Сделать</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🔥</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Факел</div>
+              <div class="quest-item-desc">2 палки + 1 трава. Ярче светит, горит одну ночь.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="wbTorchBtn" onclick="craftTorch()">Сделать</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">⚔️</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Сейчас в руках: <span id="wbWeapon">Кулаки</span></div>
+            </div>
+          </div>
+          <div class="quest-menu-hint">[ E или клик в стороне — закрыть ]</div>
+        </div>
+      </div>
+
+      <div class="dialogue" id="dialogue">
+        <div class="dialogue-box">
+          <div class="dialogue-name" id="dialogueName">Охотник</div>
+          <div class="dialogue-text" id="dialogueText">...</div>
+          <div class="dialogue-continue" id="dialogueContinue">[ E — продолжить ]</div>
+          <div class="dialogue-choices" id="dialogueChoices">
+            <button class="choice-btn accept" onclick="acceptOffer()">Принять</button>
+            <button class="choice-btn decline" onclick="declineOffer()">Отказать</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="wolfHpLayer"></div>
+      <div class="toast" id="toast"></div>
+      <div class="drown-warning" id="drownWarning">Ты начинаешь задыхаться...</div>
+
+      <div class="guide-arrow" id="guideArrow">
+        <svg viewBox="0 0 40 110" width="34" height="94">
+          <line x1="20" y1="104" x2="20" y2="38" stroke="#e8a33d" stroke-width="7" stroke-linecap="round"/>
+          <polygon points="20,4 3,42 37,42" fill="#e8a33d"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="overlay show" id="startOverlay">
+      <h1>Тёмный лес</h1>
+      <p>Самолёт разбился среди чёрных деревьев. Ты выжил — едва.<br>
+      Где-то в темноте раздаются крики о помощи.<br><br>
+      Иди на голос. Может быть, вместе у вас получится выбраться живыми.</p>
+      <button onclick="startGame()">Очнуться</button>
+    </div>
+
+    <div class="overlay" id="winOverlay">
+      <h1>Ты выбрался</h1>
+      <p id="winText"></p>
+      <button onclick="location.reload()">Играть снова</button>
+    </div>
+
+    <div class="overlay" id="loseOverlay">
+      <h1 id="loseTitle">Лес забрал тебя</h1>
+      <p id="loseText">Тьма сомкнулась быстрее, чем ты успел выйти к свету.</p>
+      <button onclick="location.reload()">Попробовать снова</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ================= UTIL =================
+function dist(ax,az,bx,bz){ return Math.hypot(ax-bx, az-bz); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+function rand(a,b){ return a + Math.random()*(b-a); }
+function lerp(a,b,t){ return a + (b-a)*t; }
+function lerpAngle(a,b,t){
+  let diff = ((b-a+Math.PI*3) % (Math.PI*2)) - Math.PI;
+  return a + diff*t;
+}
+let toastTimer = null;
+function showToast(text){
+  const el = document.getElementById('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove('show'), 3200);
+}
+
+// ================= WORLD CONSTANTS =================
+const BOUND_X = 255, BOUND_Z = 144;
+const PLAYER_START = {x:-210, z:0};
+const HUNTER_POS = {x:204, z:0};
+const CAMPFIRE_POS = {x:180, z:18};
+const WORKBENCH_POS = {x:196, z:-14};
+
+// Exit gate is hidden in a random corner of the map, revealed only after
+// the player has completed both hunter quests (firewood + wolves).
+function pickExitCorner(){
+  const margin = 11;
+  const corners = [
+    {x:-BOUND_X+margin, z:-BOUND_Z+margin},
+    {x: BOUND_X-margin, z:-BOUND_Z+margin},
+    {x:-BOUND_X+margin, z: BOUND_Z-margin},
+    {x: BOUND_X-margin, z: BOUND_Z-margin}
+  ];
+  const valid = corners.filter(c =>
+    dist(c.x,c.z,PLAYER_START.x,PLAYER_START.z) > 25 &&
+    dist(c.x,c.z,HUNTER_POS.x,HUNTER_POS.z) > 25
+  );
+  const pool = valid.length ? valid : corners;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+const EXIT_POS = pickExitCorner();
+
+// ================= THREE SETUP =================
+const stageEl = document.getElementById('stage');
+const scene = new THREE.Scene();
+const FOG_COLOR = 0x03050a;
+scene.background = new THREE.Color(FOG_COLOR);
+scene.fog = new THREE.FogExp2(FOG_COLOR, 0.015);
+
+const camera = new THREE.PerspectiveCamera(58, 960/600, 0.1, 500);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(960,600);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+if(renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
+stageEl.insertBefore(renderer.domElement, stageEl.firstChild);
+
+// lighting
+const DAY_AMBIENT = 1.4, DAY_HEMI = 1.0, DAY_FOG = 0.015;
+const NIGHT_AMBIENT = 0.22, NIGHT_HEMI = 0.16, NIGHT_FOG = 0.036;
+const ambient = new THREE.AmbientLight(0x1c2418, DAY_AMBIENT);
+scene.add(ambient);
+const hemi = new THREE.HemisphereLight(0x3a4a3a, 0x050505, DAY_HEMI);
+scene.add(hemi);
+
+const lantern = new THREE.PointLight(0xffb060, 2.4, 26, 2);
+lantern.position.set(0, 3.2, 0);
+scene.add(lantern);
+
+const fireLight = new THREE.PointLight(0xff9a3c, 0, 30, 2);
+fireLight.position.set(CAMPFIRE_POS.x, 2, CAMPFIRE_POS.z);
+scene.add(fireLight);
+
+const gateLight = new THREE.PointLight(0xe8a33d, 0, 22, 2);
+gateLight.position.set(EXIT_POS.x, 3, EXIT_POS.z);
+scene.add(gateLight);
+
+// ground
+const groundMat = new THREE.MeshStandardMaterial({ color:0x0b140b, roughness:1, metalness:0 });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(BOUND_X*2+30, BOUND_Z*2+30, 1,1), groundMat);
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+// subtle ground patches for texture variety
+const patchMat = new THREE.MeshStandardMaterial({ color:0x121f10, roughness:1 });
+for(let i=0;i<220;i++){
+  const p = new THREE.Mesh(new THREE.CircleGeometry(rand(2,5), 6), patchMat);
+  p.rotation.x = -Math.PI/2;
+  p.position.set(rand(-BOUND_X,BOUND_X), 0.01, rand(-BOUND_Z,BOUND_Z));
+  scene.add(p);
+}
+
+// ================= RIVER =================
+const RIVER_BASE_X = -30, RIVER_AMPLITUDE = 24, RIVER_FREQ = 0.045, RIVER_WIDTH = 13;
+function approxRiverX(z){ return RIVER_BASE_X + RIVER_AMPLITUDE*Math.sin(z*RIVER_FREQ); }
+function inRiver(x,z,extra){ extra = extra||0; return Math.abs(x-approxRiverX(z)) < RIVER_WIDTH/2+extra; }
+
+(function buildRiver(){
+  const points = [];
+  for(let z=-BOUND_Z-5; z<=BOUND_Z+5; z+=3){
+    points.push({x:approxRiverX(z), z});
+  }
+  const positions = [];
+  for(const p of points){
+    const nx = RIVER_WIDTH/2, nz = 0; // river banks run mostly along Z, offset along local X
+    positions.push(p.x-nx, 0.05, p.z-nz, p.x+nx, 0.05, p.z+nz);
+  }
+  const indices = [];
+  for(let i=0;i<points.length-1;i++){
+    const a=i*2, b=i*2+1, c=(i+1)*2, d=(i+1)*2+1;
+    indices.push(a,b,c, b,d,c);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  const waterMat = new THREE.MeshStandardMaterial({
+    color:0x0e2a38, emissive:0x0a3a4a, emissiveIntensity:0.5,
+    roughness:0.25, metalness:0.15, transparent:true, opacity:0.88
+  });
+  const riverMesh = new THREE.Mesh(geo, waterMat);
+  scene.add(riverMesh);
+  window.__riverWaterMat = waterMat; // for subtle shimmer animation in the update loop
+})();
+
+// ================= HELPER: PLACE RANDOM SPOT =================
+function collidesTrees(x,z,r){
+  for(const t of trees){ if(dist(x,z,t.x,t.z) < r + t.canopyR*0.7) return true; }
+  return false;
+}
+function randomFreeSpot(avoidR, existing){
+  existing = existing || [];
+  let attempts=0;
+  while(attempts<600){
+    attempts++;
+    const x = rand(-BOUND_X+4, BOUND_X-4), z = rand(-BOUND_Z+4, BOUND_Z-4);
+    if(dist(x,z,PLAYER_START.x,PLAYER_START.z) < 13) continue;
+    if(dist(x,z,HUNTER_POS.x,HUNTER_POS.z) < 16) continue;
+    if(dist(x,z,EXIT_POS.x,EXIT_POS.z) < 11) continue;
+    if(dist(x,z,WORKBENCH_POS.x,WORKBENCH_POS.z) < 10) continue;
+    if(inRiver(x,z,2)) continue;
+    if(collidesTrees(x,z,avoidR)) continue;
+    let tooClose=false;
+    for(const p of existing){ if(dist(x,z,p.x,p.z) < 9){ tooClose=true; break; } }
+    if(tooClose) continue;
+    return {x,z};
+  }
+  return {x: rand(-BOUND_X+10,BOUND_X-10), z: rand(-BOUND_Z+6,BOUND_Z-6)};
+}
+
+// ================= TREES =================
+const trees = [];
+const trunkMat = new THREE.MeshStandardMaterial({ color:0x241a12, roughness:1 });
+const canopyMat = new THREE.MeshStandardMaterial({ color:0x142a1a, roughness:1, flatShading:true });
+(function genTrees(){
+  const forbidden = [ [PLAYER_START.x,PLAYER_START.z,13], [HUNTER_POS.x,HUNTER_POS.z,16], [EXIT_POS.x,EXIT_POS.z,13], [WORKBENCH_POS.x,WORKBENCH_POS.z,9] ];
+  const WOLF_CLEARANCE = 3.4; // wolf hitbox diameter (2.8) plus buffer, so gaps between trees are always passable
+  const targetCount = 480;
+  let attempts=0;
+  while(trees.length < targetCount && attempts < 20000){
+    attempts++;
+    const x = rand(-BOUND_X+3, BOUND_X-3), z = rand(-BOUND_Z+3, BOUND_Z-3);
+    let ok = true;
+    for(const f of forbidden){ if(dist(x,z,f[0],f[1]) < f[2]){ ok=false; break; } }
+    if(ok && inRiver(x,z,3)) ok=false;
+    const canopyR = rand(1.6,2.8);
+    if(ok){
+      for(const t of trees){
+        const minSep = t.canopyR*0.7 + canopyR*0.7 + WOLF_CLEARANCE;
+        if(dist(x,z,t.x,t.z) < minSep){ ok=false; break; }
+      }
+    }
+    if(ok){
+      const height = rand(5,8);
+      const group = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.5,height*0.5,6), trunkMat);
+      trunk.position.y = height*0.25;
+      group.add(trunk);
+      const canopy = new THREE.Mesh(new THREE.ConeGeometry(canopyR, height*0.85, 7), canopyMat);
+      canopy.position.y = height*0.55;
+      group.add(canopy);
+      group.position.set(x,0,z);
+      group.rotation.y = rand(0,6.28);
+      scene.add(group);
+      trees.push({x,z,canopyR, mesh:group});
+    }
+  }
+})();
+
+// ================= PEOPLE (player / hunter) =================
+function buildPerson(coatColor, skinColor){
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.6,2.2,1.0), new THREE.MeshStandardMaterial({color:coatColor, roughness:0.9}));
+  body.position.y = 1.3;
+  g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.62,10,8), new THREE.MeshStandardMaterial({color:skinColor, roughness:0.8}));
+  head.position.y = 2.75;
+  g.add(head);
+  return g;
+}
+const playerMesh = buildPerson(0x3d3427, 0xd9c9a3);
+playerMesh.visible = false; // first-person: no need to render own body
+scene.add(playerMesh);
+
+// hunter: injured, lying on the ground near the dead fire pit
+const hunterMesh = buildPerson(0x5c4a34, 0xe8c98a);
+hunterMesh.rotation.z = Math.PI/2; // lay the body down
+hunterMesh.rotation.y = 0.5;
+hunterMesh.position.set(HUNTER_POS.x, 0.75, HUNTER_POS.z);
+scene.add(hunterMesh);
+
+// unlit fire pit: dead logs + ring of stones, visible from the start
+const firePitMat = new THREE.MeshStandardMaterial({ color:0x2a2018, roughness:1 });
+const fireGroup = new THREE.Group();
+const logs = new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,0.3,8), firePitMat);
+logs.position.y = 0.15;
+fireGroup.add(logs);
+for(let i=0;i<8;i++){
+  const ang = i/8*Math.PI*2;
+  const stone = new THREE.Mesh(new THREE.SphereGeometry(0.22,6,5), firePitMat);
+  stone.position.set(Math.cos(ang)*1.15, 0.12, Math.sin(ang)*1.15);
+  fireGroup.add(stone);
+}
+fireGroup.position.set(CAMPFIRE_POS.x, 0, CAMPFIRE_POS.z);
+scene.add(fireGroup);
+
+// flame is only added once the player brings firewood and lights it (see lightCampfire())
+let fireLit = false;
+function lightCampfire(){
+  if(fireLit) return;
+  fireLit = true;
+  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.5,1.3,8), new THREE.MeshStandardMaterial({color:0xff8a2a, emissive:0xff5500, emissiveIntensity:1.2}));
+  flame.position.set(CAMPFIRE_POS.x, 1.0, CAMPFIRE_POS.z);
+  scene.add(flame);
+  showToast("Костёр разгорается — стало теплее и светлее.");
+}
+
+// workbench: a rough wooden table where sticks and trophies become tools
+const benchWoodMat = new THREE.MeshStandardMaterial({ color:0x3a2a18, roughness:1 });
+const workbenchGroup = new THREE.Group();
+const benchTop = new THREE.Mesh(new THREE.BoxGeometry(3.2,0.35,1.8), benchWoodMat);
+benchTop.position.y = 1.6;
+workbenchGroup.add(benchTop);
+const legPositions = [[-1.4,-0.75],[1.4,-0.75],[-1.4,0.75],[1.4,0.75]];
+for(const [lx,lz] of legPositions){
+  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.14,1.6,6), benchWoodMat);
+  leg.position.set(lx, 0.8, lz);
+  workbenchGroup.add(leg);
+}
+// a couple of loose sticks and a fang on the surface for flavor
+const benchStickMat = new THREE.MeshStandardMaterial({ color:0xa5691f, roughness:0.8 });
+for(let i=0;i<3;i++){
+  const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,1.4,5), benchStickMat);
+  stick.rotation.z = Math.PI/2;
+  stick.rotation.y = i*0.6;
+  stick.position.set(-0.6+i*0.5, 1.82, -0.3+i*0.2);
+  workbenchGroup.add(stick);
+}
+workbenchGroup.position.set(WORKBENCH_POS.x, 0, WORKBENCH_POS.z);
+scene.add(workbenchGroup);
+const WORKBENCH_RADIUS = 6.5;
+
+// exit gate
+const gateGroup = new THREE.Group();
+const poleMat = new THREE.MeshStandardMaterial({ color:0x2a2018, roughness:1 });
+const poleGeo = new THREE.CylinderGeometry(0.35,0.35,6,6);
+const poleL = new THREE.Mesh(poleGeo, poleMat); poleL.position.set(-3.5,3,0); gateGroup.add(poleL);
+const poleR = new THREE.Mesh(poleGeo, poleMat); poleR.position.set(3.5,3,0); gateGroup.add(poleR);
+const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,7.4,6), poleMat);
+bar.rotation.z = Math.PI/2; bar.position.set(0,5.8,0);
+gateGroup.add(bar);
+gateGroup.position.set(EXIT_POS.x, 0, EXIT_POS.z);
+gateGroup.visible = false; // hidden until 2 hunter quests are done
+scene.add(gateGroup);
+
+// ================= HERBS (healing pickups) =================
+let herbs = [];
+const herbMat = new THREE.MeshStandardMaterial({ color:0x3fae55, emissive:0x1e6b30, emissiveIntensity:0.7, roughness:0.7 });
+const HERB_HEAL = 25;
+const HERB_COUNT = 6;
+const HERB_RESPAWN_DELAY = 40; // seconds
+function buildHerbMesh(){
+  const g = new THREE.Group();
+  for(let i=0;i<3;i++){
+    const blade = new THREE.Mesh(new THREE.ConeGeometry(0.12,0.55,5), herbMat);
+    blade.position.y = 0.27;
+    blade.rotation.z = (i-1)*0.5;
+    blade.rotation.y = i*2.1;
+    g.add(blade);
+  }
+  return g;
+}
+function spawnOneHerb(){
+  const existing = herbs.map(h=>({x:h.x,z:h.z}));
+  const s = randomFreeSpot(1.2, existing);
+  const mesh = buildHerbMesh();
+  mesh.position.set(s.x, 0, s.z);
+  scene.add(mesh);
+  herbs.push({x:s.x, z:s.z, collected:false, mesh, baseY:0});
+}
+function spawnHerbs(){
+  for(const h of herbs) scene.remove(h.mesh);
+  herbs = [];
+  for(let i=0;i<HERB_COUNT;i++) spawnOneHerb();
+}
+function collectHerb(h){
+  h.collected = true;
+  scene.remove(h.mesh);
+  herbs = herbs.filter(x=>x!==h);
+  player.inventory.herbs++;
+  showToast(`Подобрано: лечебные травы (${player.inventory.herbs})`);
+  refreshInventory();
+  setTimeout(spawnOneHerb, HERB_RESPAWN_DELAY*1000);
+}
+
+// ================= STICK PICKUPS (scattered crafting material) =================
+let stickPickups = [];
+const groundStickMat = new THREE.MeshStandardMaterial({ color:0x5a3d22, emissive:0x231206, emissiveIntensity:0.35, roughness:0.85 });
+const STICK_PICKUP_COUNT = 40;
+function buildStickPickupMesh(){
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,1.6,5), groundStickMat);
+  mesh.rotation.z = Math.PI/2.3;
+  mesh.rotation.y = rand(0,6.28);
+  return mesh;
+}
+function spawnStickPickups(){
+  for(const s of stickPickups) scene.remove(s.mesh);
+  stickPickups = [];
+  const placed = [];
+  for(let i=0;i<STICK_PICKUP_COUNT;i++){
+    const s = randomFreeSpot(1.0, placed);
+    placed.push(s);
+    const mesh = buildStickPickupMesh();
+    mesh.position.set(s.x, 0.15, s.z);
+    scene.add(mesh);
+    stickPickups.push({x:s.x, z:s.z, collected:false, mesh});
+  }
+}
+function collectStickPickup(s){
+  s.collected = true;
+  scene.remove(s.mesh);
+  stickPickups = stickPickups.filter(x=>x!==s);
+  player.inventory.sticks++;
+  showToast(`Подобрана палка (${player.inventory.sticks})`);
+  refreshInventory();
+}
+
+// ================= FIREWOOD =================
+let firewood = [];
+const stickMat = new THREE.MeshStandardMaterial({ color:0xa5691f, emissive:0x502e0a, emissiveIntensity:0.4, roughness:0.8 });
+function spawnFirewood(){
+  for(const f of firewood) scene.remove(f.mesh);
+  firewood = [];
+}
+
+// ================= HOSTILES (wolves + bear) =================
+let wolves = [];      // hunter's wolf quest
+let nightWolves = [];  // temporary night-siege attackers
+let bear = null;       // day-7 threat
+
+const wolfBodyMat = new THREE.MeshStandardMaterial({ color:0x141414, roughness:0.9 });
+const wolfEyeMat = new THREE.MeshStandardMaterial({ color:0xff3030, emissive:0xff2020, emissiveIntensity:1.6 });
+function buildWolf(){
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.0,2.6), wolfBodyMat);
+  body.position.y = 0.7;
+  g.add(body);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.8,1.0), wolfBodyMat);
+  head.position.set(0,0.85,1.6);
+  g.add(head);
+  const eyeGeo = new THREE.SphereGeometry(0.08,6,6);
+  const eyeL = new THREE.Mesh(eyeGeo, wolfEyeMat); eyeL.position.set(0.22,0.95,2.05); g.add(eyeL);
+  const eyeR = new THREE.Mesh(eyeGeo, wolfEyeMat); eyeR.position.set(-0.22,0.95,2.05); g.add(eyeR);
+  return g;
+}
+const bearBodyMat = new THREE.MeshStandardMaterial({ color:0x2a1c14, roughness:0.95 });
+function buildBear(){
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.4,1.9,4.4), bearBodyMat);
+  body.position.y = 1.15;
+  g.add(body);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(1.4,1.3,1.6), bearBodyMat);
+  head.position.set(0,1.5,2.6);
+  g.add(head);
+  const eyeGeo = new THREE.SphereGeometry(0.12,6,6);
+  const eyeL = new THREE.Mesh(eyeGeo, wolfEyeMat); eyeL.position.set(0.32,1.65,3.3); g.add(eyeL);
+  const eyeR = new THREE.Mesh(eyeGeo, wolfEyeMat); eyeR.position.set(-0.32,1.65,3.3); g.add(eyeR);
+  return g;
+}
+
+function spawnHostile(kind, pos, opts){
+  const mesh = kind === 'bear' ? buildBear() : buildWolf();
+  mesh.position.set(pos.x,0,pos.z);
+  scene.add(mesh);
+  const hpEl = document.createElement('div');
+  hpEl.className = 'wolf-hp';
+  hpEl.innerHTML = '<div class="wolf-hp-fill" style="width:100%"></div>';
+  document.getElementById('wolfHpLayer').appendChild(hpEl);
+  return Object.assign({
+    x:pos.x, z:pos.z, alive:true, hitCd:0, wanderA:rand(0,6.28), mesh, hpEl, rotY:0, kind
+  }, opts);
+}
+
+let wolvesDefeated = 0;
+function spawnWolves(){
+  for(const w of wolves) scene.remove(w.mesh);
+  wolves = [];
+  const placed = [];
+  for(let i=0;i<3;i++){
+    const s = randomFreeSpot(2.0, placed);
+    placed.push(s);
+    wolves.push(spawnHostile('wolf', s, { hp:30, maxhp:30, speed:rand(4.5,5.8), r:1.4, dmg:8, isQuestWolf:true }));
+  }
+}
+
+// ---- night siege ----
+let nightActive = false;
+function startNightSiege(){
+  nightActive = true;
+  document.getElementById('nightTag').style.display = 'inline';
+  const placed = [];
+  const count = 3;
+  for(let i=0;i<count;i++){
+    const s = randomFreeSpot(2.0, placed);
+    placed.push(s);
+    nightWolves.push(spawnHostile('wolf', s, { hp:26, maxhp:26, speed:rand(5.2,6.4), r:1.4, dmg:8, isQuestWolf:false }));
+  }
+  showToast("Спускается ночь. Волки почуяли лагерь — держись у света.");
+}
+function endNightSiege(){
+  nightActive = false;
+  document.getElementById('nightTag').style.display = 'none';
+  for(const w of nightWolves){ if(w.alive) scene.remove(w.mesh); w.hpEl.remove(); }
+  nightWolves = [];
+  showToast("Рассвет. Волки отступили обратно во тьму.");
+}
+
+// ---- bear (day 7+) ----
+let bearSpawned = false;
+function spawnBear(){
+  bearSpawned = true;
+  const corner = { x: -Math.sign(player.x||1)*(BOUND_X-15), z: rand(-BOUND_Z+15, BOUND_Z-15) };
+  bear = spawnHostile('bear', corner, { hp:140, maxhp:140, speed:rand(4.0,4.6), r:2.2, dmg:18, isQuestWolf:false });
+  showToast("Ты чувствуешь: в лесу теперь есть кто-то куда крупнее волков.");
+}
+
+// ================= STATE =================
+const player = {
+  x:PLAYER_START.x, z:PLAYER_START.z, r:1.3, hp:100, maxhp:100,
+  speed:16, attackCd:0, rotY:Math.PI/2, // facing +X (toward hunter)
+  stamina:5, maxStamina:5, sprinting:false,
+  inventory: { herbs:0, wolfFangs:0, bearClaw:0, sticks:0, torches:0 },
+  weapon: 'fists'
+};
+let trust = 0;
+let stage = 'intro';
+let dialogueOpen = false;
+let questMenuOpen = false;
+let invOpen = false;
+let dialogueQueue = [], dialogueIndex = 0, dialogueOptions = {};
+let eDown=false, eWasDown=false, spaceDown=false, spaceWasDown=false;
+let time = 0;
+let waterTime = 0;
+let survivalTime = 0;
+let currentDay = 1;
+const DAY_LENGTH = 90; // seconds of play per in-game day
+let started = false;
+
+const DIALOGUE = {
+  first: [
+    "...Помогите! Пожалуйста, кто-нибудь!",
+    "Ты идёшь на крик через тёмный лес — и видишь его: лежит у потухшего кострища, нога неестественно вывернута.",
+    "...Ты жив? Хвала богам, ты жив. Помоги мне...",
+    "Меня зовут Гром. Выслеживал зверя, сорвался с откоса — идти не могу.",
+    "Костёр погас, а ночью в этом лесу опасно. Разожги его — принеси хворост, три вязанки, я видел их неподалёку."
+  ],
+  firewoodReminder: ["Хворост сам себя не найдёт. Ищи по лесу — я подсвечу его в темноте."],
+  firewoodDone: [
+    "Хорошо. Значит, руки у тебя не только чтобы дрожать.",
+    "Костёр не даст нам замёрзнуть, но не отпугнёт зверей.",
+    "Волки почуяли кровь после крушения. Отгони их — покажи, что ты не лёгкая добыча.",
+    "Я бы помог, да нога не держит. Придётся тебе одному."
+  ],
+  wolvesReminder: ["Волки где-то рядом. Держись на ногах — бей пробелом, когда близко."],
+  wolvesDone: [
+    "...Не ожидал. Ты дерёшься лучше, чем выглядишь.",
+    "Ладно. Я начинаю тебе верить.",
+    "Есть тропа отсюда — старая, звериная, но верная.",
+    "Теперь, когда я тебе верю — ты сможешь её заметить. Ищи в лесу."
+  ],
+  escortReminder: ["Тропа где-то на краю леса — присмотрись, теперь её видно."],
+  final: [
+    "Вот она. Свет за деревьями — это не обман, это выход.",
+    "Спасибо, что не сбежал, когда мог. Немногие остаются.",
+    "Иди. Дорога свободна. И... удачи, чужак."
+  ]
+};
+
+function openDialogue(lines, options){
+  dialogueOpen = true;
+  dialogueQueue = lines.slice();
+  dialogueIndex = 0;
+  dialogueOptions = options || {};
+  document.getElementById('dialogue').classList.add('show');
+  renderDialogueLine();
+}
+function renderDialogueLine(){
+  document.getElementById('dialogueText').textContent = dialogueQueue[dialogueIndex];
+  const atOfferEnd = dialogueOptions.isOffer && dialogueIndex === dialogueQueue.length - 1;
+  document.getElementById('dialogueChoices').style.display = atOfferEnd ? 'flex' : 'none';
+  document.getElementById('dialogueContinue').style.display = atOfferEnd ? 'none' : 'block';
+}
+function advanceDialogue(){
+  const atOfferEnd = dialogueOptions.isOffer && dialogueIndex === dialogueQueue.length - 1;
+  if(atOfferEnd) return; // must use the Принять / Отказать buttons here
+  dialogueIndex++;
+  if(dialogueIndex >= dialogueQueue.length) closeDialogue();
+  else renderDialogueLine();
+}
+function closeDialogue(){
+  dialogueOpen = false;
+  document.getElementById('dialogue').classList.remove('show');
+  document.getElementById('dialogueChoices').style.display = 'none';
+  onDialogueClosed();
+}
+function onDialogueClosed(){
+  if(stage === 'final_pending'){
+    stage = 'done';
+    gateLight.intensity = 3.2;
+    updateQuestBanner("Тропа открыта — иди к свету");
+  }
+}
+function acceptOffer(){
+  const cb = dialogueOptions.onAccept;
+  dialogueOpen = false;
+  document.getElementById('dialogue').classList.remove('show');
+  document.getElementById('dialogueChoices').style.display = 'none';
+  if(cb) cb();
+}
+function declineOffer(){
+  const cb = dialogueOptions.onDecline;
+  dialogueOpen = false;
+  document.getElementById('dialogue').classList.remove('show');
+  document.getElementById('dialogueChoices').style.display = 'none';
+  if(cb) cb();
+}
+function updateQuestBanner(txt){ document.getElementById('questBanner').textContent = txt; refreshQuestMenu(); }
+function setTrust(n){
+  trust = n;
+  document.querySelectorAll('.pip').forEach((p,i)=> p.classList.toggle('on', i < trust));
+}
+
+function toggleQuestMenu(){
+  questMenuOpen = !questMenuOpen;
+  document.getElementById('questMenu').classList.toggle('show', questMenuOpen);
+  if(questMenuOpen) refreshQuestMenu();
+}
+function closeQuestMenu(){
+  questMenuOpen = false;
+  document.getElementById('questMenu').classList.remove('show');
+}
+
+function toggleInventory(){
+  invOpen = !invOpen;
+  document.getElementById('invMenu').classList.toggle('show', invOpen);
+  if(invOpen) refreshInventory();
+}
+function closeInventory(){
+  invOpen = false;
+  document.getElementById('invMenu').classList.remove('show');
+}
+function refreshInventory(){
+  document.getElementById('invHerbCount').textContent = `(${player.inventory.herbs})`;
+  document.getElementById('invFangCount').textContent = `(${player.inventory.wolfFangs})`;
+  document.getElementById('invClawCount').textContent = `(${player.inventory.bearClaw}/1)`;
+  document.getElementById('invSticksCount').textContent = `(${player.inventory.sticks})`;
+  document.getElementById('invWeaponName').textContent = WEAPON_STATS[player.weapon].label;
+  const woodN = (typeof firewood !== 'undefined') ? firewood.filter(f=>f.collected).length : 0;
+  document.getElementById('invWoodCount').textContent =
+    (stage==='firewood' || stage==='firewood_waiting') ? `(${woodN}/3)` : (STAGES_AFTER_FIREWOOD.includes(stage) ? "(сдан)" : "(—)");
+  const btn = document.getElementById('invUseHerbBtn');
+  btn.disabled = player.inventory.herbs <= 0 || player.hp >= player.maxhp;
+  btn.style.opacity = btn.disabled ? '0.4' : '1';
+
+  document.getElementById('invTorchCount').textContent = `(${player.inventory.torches})`;
+  const torchDesc = document.getElementById('invTorchDesc');
+  const torchBtn = document.getElementById('invUseTorchBtn');
+  if(torchActive){
+    torchDesc.textContent = `Горит: ещё ${Math.ceil(torchTimeLeft)}с.`;
+    torchBtn.disabled = true;
+  } else {
+    torchDesc.textContent = "Ярче светит. Зажечь — клавиша T.";
+    torchBtn.disabled = player.inventory.torches <= 0;
+  }
+  torchBtn.style.opacity = torchBtn.disabled ? '0.4' : '1';
+}
+function useHerb(){
+  if(player.inventory.herbs <= 0) return;
+  if(player.hp >= player.maxhp){ showToast("Здоровье уже полное."); return; }
+  player.inventory.herbs--;
+  player.hp = clamp(player.hp + HERB_HEAL, 0, player.maxhp);
+  showToast(`Травы использованы: +${HERB_HEAL} здоровья`);
+  refreshInventory();
+}
+
+// ================= WORKBENCH / CRAFTING =================
+let workbenchOpen = false;
+const WEAPON_STATS = {
+  fists: { dmg:15, cooldown:0.35, label:'Кулаки' },
+  knife: { dmg:22, cooldown:0.22, label:'Нож' },
+  axe:   { dmg:34, cooldown:0.5,  label:'Топор' }
+};
+function toggleWorkbench(){
+  workbenchOpen = !workbenchOpen;
+  document.getElementById('workbenchMenu').classList.toggle('show', workbenchOpen);
+  if(workbenchOpen) refreshWorkbench();
+}
+function closeWorkbench(){
+  workbenchOpen = false;
+  document.getElementById('workbenchMenu').classList.remove('show');
+}
+function craftSticks(){
+  player.inventory.sticks += 20;
+  showToast("Сделано 20 палок.");
+  refreshWorkbench();
+  refreshInventory();
+}
+function craftKnife(){
+  if(player.inventory.sticks < 10 || player.inventory.wolfFangs < 1) return;
+  player.inventory.sticks -= 10;
+  player.inventory.wolfFangs -= 1;
+  player.weapon = 'knife';
+  showToast("Скрафтен нож: быстрее бьёт, но слабее топора.");
+  refreshWorkbench();
+  refreshInventory();
+}
+function craftAxe(){
+  if(player.inventory.sticks < 20 || player.inventory.wolfFangs < 3) return;
+  player.inventory.sticks -= 20;
+  player.inventory.wolfFangs -= 3;
+  player.weapon = 'axe';
+  showToast("Скрафтен топор: медленнее, но куда сильнее.");
+  refreshWorkbench();
+  refreshInventory();
+}
+const TORCH_STICKS_COST = 2, TORCH_HERBS_COST = 1;
+const TORCH_DURATION = DAY_LENGTH * 0.25; // burns for exactly one night
+function craftTorch(){
+  if(player.inventory.sticks < TORCH_STICKS_COST || player.inventory.herbs < TORCH_HERBS_COST) return;
+  player.inventory.sticks -= TORCH_STICKS_COST;
+  player.inventory.herbs -= TORCH_HERBS_COST;
+  player.inventory.torches++;
+  showToast("Скрафтен факел — хватит на одну ночь.");
+  refreshWorkbench();
+  refreshInventory();
+}
+let torchActive = false;
+let torchTimeLeft = 0;
+function useTorch(){
+  if(torchActive || player.inventory.torches <= 0) return;
+  player.inventory.torches--;
+  torchActive = true;
+  torchTimeLeft = TORCH_DURATION;
+  showToast("Факел зажжён — светит ярче на всю ночь.");
+  refreshInventory();
+}
+function refreshWorkbench(){
+  document.getElementById('wbSticks').textContent = player.inventory.sticks;
+  document.getElementById('wbFangs').textContent = player.inventory.wolfFangs;
+  document.getElementById('wbWeapon').textContent = WEAPON_STATS[player.weapon].label;
+
+  const knifeBtn = document.getElementById('wbKnifeBtn');
+  const knifeReady = player.inventory.sticks >= 10 && player.inventory.wolfFangs >= 1;
+  knifeBtn.disabled = !knifeReady || player.weapon === 'knife';
+  knifeBtn.style.opacity = knifeBtn.disabled ? '0.4' : '1';
+
+  const axeBtn = document.getElementById('wbAxeBtn');
+  const axeReady = player.inventory.sticks >= 20 && player.inventory.wolfFangs >= 3;
+  axeBtn.disabled = !axeReady || player.weapon === 'axe';
+  axeBtn.style.opacity = axeBtn.disabled ? '0.4' : '1';
+
+  const torchBtn = document.getElementById('wbTorchBtn');
+  const torchReady = player.inventory.sticks >= TORCH_STICKS_COST && player.inventory.herbs >= TORCH_HERBS_COST;
+  torchBtn.disabled = !torchReady;
+  torchBtn.style.opacity = torchBtn.disabled ? '0.4' : '1';
+}
+
+const STAGES_AFTER_FIREWOOD = ['wolves','wolves_waiting','escort','escort_waiting','final_pending','done'];
+const STAGES_AFTER_WOLVES = ['escort','escort_waiting','final_pending','done'];
+const STAGES_AFTER_TRAIL = ['final_pending','done'];
+
+function setQuestUI(itemId, dotId, descId, state, activeText, doneText, lockedText){
+  document.getElementById(itemId).classList.toggle('locked', state==='locked');
+  const dot = document.getElementById(dotId);
+  dot.classList.toggle('active', state==='active');
+  dot.classList.toggle('done', state==='done');
+  document.getElementById(descId).textContent =
+    state==='done' ? doneText : (state==='active' ? activeText : lockedText);
+}
+
+function refreshQuestMenu(){
+  // quest 1: firewood
+  let s1 = 'locked';
+  if(stage === 'firewood' || stage === 'firewood_waiting') s1 = 'active';
+  else if(STAGES_AFTER_FIREWOOD.includes(stage)) s1 = 'done';
+  const woodCount = firewood.filter(f=>f.collected).length;
+  setQuestUI('qItem1','qDot1','qDesc1', s1,
+    stage==='firewood_waiting' ? `Собрано ${woodCount}/3 — вернись к охотнику.` : `Найди хворост в лесу (${woodCount}/3).`,
+    "Хворост принесён охотнику.",
+    "Охотник ещё не рассказал об этом задании."
+  );
+
+  // quest 2: wolves
+  let s2 = 'locked';
+  if(stage === 'wolves' || stage === 'wolves_waiting') s2 = 'active';
+  else if(STAGES_AFTER_WOLVES.includes(stage)) s2 = 'done';
+  setQuestUI('qItem2','qDot2','qDesc2', s2,
+    stage==='wolves_waiting' ? `Волки отогнаны (${wolvesDefeated}/3) — вернись к охотнику.` : `Отгони волков от лагеря (${wolvesDefeated}/3).`,
+    "Волки отогнаны от лагеря.",
+    "Задание пока не выдано."
+  );
+
+  // quest 3: trail
+  let s3 = 'locked';
+  if(stage === 'escort' || stage === 'escort_waiting') s3 = 'active';
+  else if(STAGES_AFTER_TRAIL.includes(stage)) s3 = 'done';
+  setQuestUI('qItem3','qDot3','qDesc3', s3,
+    stage==='escort_waiting' ? "Тропа найдена — вернись к охотнику." : "Найди тропу — она где-то на краю леса.",
+    "Тропа найдена, путь свободен.",
+    "Задание пока не выдано."
+  );
+}
+
+// ---- quest accept/decline outcomes ----
+function acceptFirewoodQuest(){
+  stage = 'firewood';
+  spawnFirewood();
+  updateQuestBanner("Найди хворост для костра (0/3)");
+}
+function declineFirewoodQuest(){
+  updateQuestBanner("Охотник ждёт твоего решения...");
+}
+function acceptWolfQuest(){
+  setTrust(1);
+  stage = 'wolves';
+  lightCampfire();
+  spawnWolves();
+  updateQuestBanner("Отгони волков (0/3)");
+}
+function declineWolfQuest(){
+  updateQuestBanner("Вернись к охотнику, когда решишься");
+}
+function acceptTrailQuest(){
+  setTrust(2);
+  stage = 'escort';
+  gateGroup.visible = true;
+  gateLight.intensity = 1.3; // dim glow, findable but not yet "unlocked"
+  updateQuestBanner("Найди тропу — она где-то на краю леса");
+}
+function declineTrailQuest(){
+  updateQuestBanner("Охотник ждёт, когда ты будешь готов");
+}
+
+// ================= INPUT =================
+const keys = {};
+window.addEventListener('keydown', e=>{
+  keys[e.key.toLowerCase()] = true;
+  if(e.key===' ') e.preventDefault();
+  const k = e.key.toLowerCase();
+  if(k==='i' && started && !dialogueOpen && !questMenuOpen && !workbenchOpen) toggleInventory();
+  if(k==='r' && started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen) useHerb();
+  if(k==='t' && started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen) useTorch();
+});
+window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+
+function startGame(){
+  document.getElementById('startOverlay').classList.remove('show');
+  started = true;
+  spawnHerbs();
+  spawnStickPickups();
+  openDialogue(DIALOGUE.first, {isOffer:true, onAccept:acceptFirewoodQuest, onDecline:declineFirewoodQuest});
+}
+
+// right mouse button drag turns the player, same as A/D
+let rmbDown = false;
+renderer.domElement.addEventListener('contextmenu', e=> e.preventDefault());
+renderer.domElement.addEventListener('mousedown', e=>{ if(e.button===2) rmbDown = true; });
+window.addEventListener('mouseup', e=>{ if(e.button===2) rmbDown = false; });
+window.addEventListener('mousemove', e=>{
+  if(rmbDown && started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen){
+    player.rotY -= e.movementX * 0.005;
+  }
+});
+
+// ================= COMBAT =================
+function allHostiles(){
+  const list = [...wolves, ...nightWolves];
+  if(bear && bear.alive) list.push(bear);
+  return list.filter(w=>w.alive);
+}
+
+function doAttack(){
+  let nearest=null, nd=999;
+  for(const w of allHostiles()){
+    const d = dist(player.x,player.z,w.x,w.z);
+    if(d < 4.4 && d < nd){ nd=d; nearest=w; }
+  }
+  if(nearest){
+    nearest.hp -= WEAPON_STATS[player.weapon].dmg;
+    flashWolf(nearest);
+    if(nearest.hp <= 0){
+      nearest.alive = false;
+      scene.remove(nearest.mesh);
+      nearest.hpEl.style.display = 'none';
+      if(nearest.kind === 'wolf'){
+        player.inventory.wolfFangs++;
+      }
+      if(nearest.isQuestWolf){
+        wolvesDefeated++;
+        if(stage==='wolves' || stage==='wolves_waiting'){
+          updateQuestBanner(`Отгони волков (${wolvesDefeated}/3)`);
+          if(wolvesDefeated >= 3){
+            stage = 'wolves_waiting';
+            updateQuestBanner("Вернись к охотнику");
+          }
+        }
+      } else if(nearest.kind === 'bear'){
+        player.inventory.bearClaw = 1;
+        showToast("Медведь повержен. В лесу стало чуть тише.");
+      }
+      refreshInventory();
+    }
+  }
+}
+function flashWolf(w){
+  const bodyMesh = w.mesh.children[0];
+  if(!bodyMesh.userData.ownMaterial){
+    bodyMesh.material = bodyMesh.material.clone();
+    bodyMesh.material.emissive = new THREE.Color(0xffffff);
+    bodyMesh.userData.ownMaterial = true;
+  }
+  bodyMesh.material.emissiveIntensity = 0.9;
+  setTimeout(()=>{ if(bodyMesh.material) bodyMesh.material.emissiveIntensity = 0; }, 120);
+}
+
+function tryInteractHunter(){
+  if(dist(player.x,player.z,HUNTER_POS.x,HUNTER_POS.z) > 6.5) return;
+  if(questMenuOpen){ closeQuestMenu(); return; }
+  if(stage === 'intro'){
+    openDialogue(DIALOGUE.first, {isOffer:true, onAccept:acceptFirewoodQuest, onDecline:declineFirewoodQuest});
+  } else if(stage === 'firewood'){
+    toggleQuestMenu();
+  } else if(stage === 'firewood_waiting'){
+    openDialogue(DIALOGUE.firewoodDone, {isOffer:true, onAccept:acceptWolfQuest, onDecline:declineWolfQuest});
+  } else if(stage === 'wolves'){
+    toggleQuestMenu();
+  } else if(stage === 'wolves_waiting'){
+    openDialogue(DIALOGUE.wolvesDone, {isOffer:true, onAccept:acceptTrailQuest, onDecline:declineTrailQuest});
+  } else if(stage === 'escort'){
+    toggleQuestMenu();
+  } else if(stage === 'escort_waiting'){
+    setTrust(3); stage = 'final_pending'; openDialogue(DIALOGUE.final);
+  }
+}
+
+// ================= WOLF AI =================
+function moveTowardsAvoiding(entity, tx, tz, speed, dt){
+  const desiredAng = Math.atan2(tx-entity.x, tz-entity.z);
+  const offsets = [0,0.3,-0.3,0.6,-0.6,0.9,-0.9,1.3,-1.3,1.8,-1.8,2.4,-2.4,Math.PI];
+  for(const off of offsets){
+    const ang = desiredAng + off;
+    const nx = entity.x + Math.sin(ang)*speed*dt;
+    const nz = entity.z + Math.cos(ang)*speed*dt;
+    if(!collidesTrees(nx,nz,entity.r)){
+      entity.x = clamp(nx, -BOUND_X+1, BOUND_X-1);
+      entity.z = clamp(nz, -BOUND_Z+1, BOUND_Z-1);
+      entity.rotY = ang;
+      return true;
+    }
+  }
+  return false;
+}
+function updateHostileGroup(list, dt){
+  for(const w of list){
+    if(!w.alive) continue;
+    if(w.hitCd > 0) w.hitCd -= dt;
+    const d = dist(player.x,player.z,w.x,w.z);
+    let speed = w.speed;
+    if(d < 16) speed = w.speed * 1.35;
+    moveTowardsAvoiding(w, player.x, player.z, speed, dt);
+
+    if(d < player.r + w.r - 0.3 && w.hitCd <= 0){
+      player.hp = clamp(player.hp - w.dmg, 0, player.maxhp);
+      w.hitCd = 0.9;
+      if(player.hp<=0) doLose();
+    }
+  }
+}
+function updateWolves(dt){ updateHostileGroup(wolves, dt); }
+
+// ================= UPDATE =================
+function collidesTreesPlayer(x,z,r){ return collidesTrees(x,z,r); }
+
+function update(dt){
+  time += dt;
+  if(started){
+    survivalTime += dt;
+    const day = 1 + Math.floor(survivalTime / DAY_LENGTH);
+    if(day !== currentDay){
+      currentDay = day;
+      document.getElementById('dayNum').textContent = currentDay;
+    }
+    const dayProgress = survivalTime % DAY_LENGTH;
+    const isNightWindow = dayProgress >= DAY_LENGTH * 0.75;
+    if(isNightWindow && !nightActive) startNightSiege();
+    else if(!isNightWindow && nightActive) endNightSiege();
+
+    if(currentDay >= 7 && !bearSpawned) spawnBear();
+
+    // smooth day -> dusk -> night lighting transition
+    const t = dayProgress / DAY_LENGTH;
+    const DUSK_START = 0.55, NIGHT_START = 0.75;
+    let nightFactor; // 0 = full day, 1 = full night
+    if(t < DUSK_START) nightFactor = 0;
+    else if(t < NIGHT_START) nightFactor = (t-DUSK_START)/(NIGHT_START-DUSK_START);
+    else nightFactor = 1;
+    ambient.intensity = lerp(DAY_AMBIENT, NIGHT_AMBIENT, nightFactor);
+    hemi.intensity = lerp(DAY_HEMI, NIGHT_HEMI, nightFactor);
+    scene.fog.density = lerp(DAY_FOG, NIGHT_FOG, nightFactor);
+  }
+  const flick = Math.sin(time*8)*0.4 + Math.sin(time*3.1)*0.3;
+  if(torchActive && started){
+    torchTimeLeft -= dt;
+    if(torchTimeLeft <= 0){
+      torchActive = false;
+      showToast("Факел догорел.");
+      refreshInventory();
+    }
+  }
+  lantern.intensity = (torchActive ? 4.2 : 2.4) + flick;
+  lantern.distance = torchActive ? 42 : 26;
+  fireLight.intensity = fireLit ? (2.6 + Math.sin(time*9)*0.4 + Math.sin(time*3.7)*0.3) : 0;
+  if(window.__riverWaterMat) window.__riverWaterMat.emissiveIntensity = 0.4 + Math.sin(time*1.4)*0.15;
+  if(invOpen && torchActive) refreshInventory();
+
+  eDown = !!keys['e'];
+  spaceDown = !!keys[' '];
+  if(eDown && !eWasDown){
+    if(dialogueOpen) advanceDialogue();
+    else if(workbenchOpen) closeWorkbench();
+    else if(dist(player.x,player.z,WORKBENCH_POS.x,WORKBENCH_POS.z) <= WORKBENCH_RADIUS) toggleWorkbench();
+    else tryInteractHunter();
+  }
+  eWasDown = eDown;
+
+  if(!dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen && started){
+    let turn = 0, move = 0;
+    if(keys['a']||keys['arrowleft']) turn += 1;
+    if(keys['d']||keys['arrowright']) turn -= 1;
+    if(keys['w']||keys['arrowup']) move += 1;
+    if(keys['s']||keys['arrowdown']) move -= 1;
+    const isMoving = (move !== 0);
+    const wantsSprint = !!keys['shift'];
+
+    if(wantsSprint && isMoving && player.stamina > 0){
+      player.sprinting = true;
+      player.stamina = clamp(player.stamina - dt, 0, player.maxStamina);
+    } else {
+      player.sprinting = false;
+      player.stamina = clamp(player.stamina + dt*0.6, 0, player.maxStamina);
+    }
+    let curSpeed = player.speed * (player.sprinting ? 1.8 : 1);
+    const inDeepWater = inRiver(player.x, player.z, 0);
+    if(inDeepWater){
+      curSpeed *= 0.55; // wading through water, no bridge nearby
+      waterTime += dt;
+    } else {
+      waterTime = 0;
+    }
+    const drownWarnEl = document.getElementById('drownWarning');
+    if(waterTime >= 6 && waterTime < 11){
+      drownWarnEl.classList.add('show');
+    } else {
+      drownWarnEl.classList.remove('show');
+    }
+    if(waterTime >= 11){
+      doLose('drowning');
+    }
+    const turnSpeed = 2.6; // rad/sec
+
+    player.rotY += turn * turnSpeed * dt;
+
+    if(isMoving){
+      const fx = Math.sin(player.rotY), fz = Math.cos(player.rotY);
+      const nx = player.x + fx*move*curSpeed*dt;
+      const nz = player.z + fz*move*curSpeed*dt;
+      if(!collidesTreesPlayer(nx, player.z, player.r)) player.x = clamp(nx, -BOUND_X+1, BOUND_X-1);
+      if(!collidesTreesPlayer(player.x, nz, player.r)) player.z = clamp(nz, -BOUND_Z+1, BOUND_Z-1);
+    }
+
+    // herb pickup (always available, heals on contact)
+    for(const h of herbs){
+      if(!h.collected && dist(player.x,player.z,h.x,h.z) < player.r+1.2){ collectHerb(h); break; }
+    }
+    // stick pickup (always available, adds crafting material)
+    for(const s of stickPickups){
+      if(!s.collected && dist(player.x,player.z,s.x,s.z) < player.r+1.2){ collectStickPickup(s); break; }
+    }
+
+    // firewood pickup
+    if(stage === 'firewood'){
+      let n=0;
+      for(const f of firewood){
+        if(!f.collected && dist(player.x,player.z,f.x,f.z) < player.r+1.4){
+          f.collected = true;
+          scene.remove(f.mesh);
+        }
+        if(f.collected) n++;
+      }
+      updateQuestBanner(`Найди хворост для костра (${n}/3)`);
+      if(n>=3 && stage==='firewood'){
+        stage = 'firewood_waiting';
+        updateQuestBanner("Вернись к охотнику с хворостом");
+      }
+    }
+
+    if(stage === 'wolves' || stage==='wolves_waiting') updateWolves(dt);
+    updateHostileGroup(nightWolves, dt);
+    if(bear && bear.alive) updateHostileGroup([bear], dt);
+
+    if(player.attackCd > 0) player.attackCd -= dt;
+    if(spaceDown && !spaceWasDown && player.attackCd <= 0){ doAttack(); player.attackCd = WEAPON_STATS[player.weapon].cooldown; }
+    spaceWasDown = spaceDown;
+
+    if(stage === 'escort' || stage === 'done'){
+      if(dist(player.x,player.z,EXIT_POS.x,EXIT_POS.z) < 5){
+        if(stage==='escort'){
+          stage='escort_waiting';
+          updateQuestBanner("Ты у тропы. Вернись к охотнику (E рядом с ним)");
+        } else if(stage==='done'){
+          doWin();
+        }
+      }
+    }
+  }
+
+  // firewood bob
+  for(const f of firewood){ if(!f.collected) f.mesh.position.y = f.baseY + Math.sin(time*2+f.x)*0.05; }
+  // herb sway
+  for(const h of herbs){ h.mesh.rotation.z = Math.sin(time*1.5+h.x)*0.08; }
+
+  updateHpBar();
+  syncMeshes();
+  updateCamera(dt);
+  updateWolfHpBars();
+  updateHunterHint();
+}
+
+function updateHunterHint(){
+  const el = document.getElementById('guideArrow');
+  const pointingToExit = (stage === 'escort' || stage === 'escort_waiting' || stage === 'final_pending' || stage === 'done');
+  const target = pointingToExit ? EXIT_POS : HUNTER_POS;
+  const d = dist(player.x, player.z, target.x, target.z);
+  if(!started || dialogueOpen || questMenuOpen || invOpen || workbenchOpen || d < 12){
+    el.classList.add('hidden');
+    return;
+  }
+  const angleToTarget = Math.atan2(target.x-player.x, target.z-player.z);
+  let rel = angleToTarget - player.rotY;
+  rel = ((rel + Math.PI*3) % (Math.PI*2)) - Math.PI; // normalize to -PI..PI
+  el.style.transform = `translateX(-50%) rotate(${rel}rad)`;
+  el.classList.remove('hidden');
+}
+
+function syncMeshes(){
+  playerMesh.position.set(player.x,0,player.z);
+  playerMesh.rotation.y = player.rotY;
+  lantern.position.set(player.x, 2.6, player.z);
+  for(const w of allHostiles()){
+    w.mesh.position.set(w.x,0,w.z);
+    w.mesh.rotation.y = w.rotY;
+  }
+  // hunter lies still, injured - no longer turns to face the player
+}
+
+function updateWolfHpBars(){
+  for(const w of [...wolves, ...nightWolves, ...(bear?[bear]:[])]){
+    if(!w.alive){ w.hpEl.style.display='none'; continue; }
+    const v = new THREE.Vector3(w.x, w.kind==='bear'?3.2:2.6, w.z);
+    v.project(camera);
+    if(v.z > 1){ w.hpEl.style.display='none'; continue; }
+    const sx = (v.x*0.5+0.5) * 960 - 17;
+    const sy = (-v.y*0.5+0.5) * 600;
+    w.hpEl.style.display='block';
+    w.hpEl.style.left = sx+'px';
+    w.hpEl.style.top = sy+'px';
+    w.hpEl.querySelector('.wolf-hp-fill').style.width = (w.hp/w.maxhp*100)+'%';
+  }
+}
+
+function updateHpBar(){
+  document.getElementById('hpFill').style.width = (player.hp/player.maxhp*100)+'%';
+  const staminaFill = document.getElementById('staminaFill');
+  staminaFill.style.width = (player.stamina/player.maxStamina*100)+'%';
+  staminaFill.style.opacity = player.stamina<=0 ? '0.4' : '1';
+}
+
+// camera: first-person, at the player's eye level, looking in the facing direction
+function updateCamera(dt){
+  const eyeHeight = 2.5;
+  const fx = Math.sin(player.rotY), fz = Math.cos(player.rotY);
+  camera.position.set(player.x, eyeHeight, player.z);
+  camera.lookAt(player.x + fx*10, eyeHeight, player.z + fz*10);
+}
+
+function doWin(){
+  started = false;
+  document.getElementById('winText').textContent = trust >= 3
+    ? "Гром вывел тебя из леса. Доверие, которое ты заслужил, спасло вам обоим жизнь."
+    : "Ты выбрался — но так и не узнал, можно ли было доверять охотнику до конца.";
+  document.getElementById('winOverlay').classList.add('show');
+}
+function doLose(reason){
+  started = false;
+  if(reason === 'drowning'){
+    document.getElementById('loseTitle').textContent = "Река забрала тебя";
+    document.getElementById('loseText').textContent = "Лёгкие наполнились водой раньше, чем ты успел выбраться на берег.";
+  } else {
+    document.getElementById('loseTitle').textContent = "Лес забрал тебя";
+    document.getElementById('loseText').textContent = "Тьма сомкнулась быстрее, чем ты успел выйти к свету.";
+  }
+  document.getElementById('loseOverlay').classList.add('show');
+}
+
+// ================= LOOP =================
+document.getElementById('loading').style.display = 'none';
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.05, (now-last)/1000);
+  last = now;
+  update(dt);
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
