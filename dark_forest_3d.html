@@ -738,6 +738,14 @@ function chooseLang(l){
   document.getElementById('deviceSelectOverlay').classList.add('show');
 }
 
+// ================= PERFORMANCE TIER =================
+// Decided from feature-detection up front (not the player's later device-select choice,
+// which only controls the on-screen control scheme) because some of what it gates -
+// antialiasing, geometry generated once at load - can't be changed after the fact.
+const autoDetectedTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0
+  || window.matchMedia('(pointer: coarse)').matches;
+const lowPowerMode = autoDetectedTouch;
+
 // ================= WORLD CONSTANTS =================
 const BOUND_X = 255, BOUND_Z = 144;
 const PLAYER_START = {x:-210, z:0};
@@ -776,16 +784,18 @@ scene.fog = new THREE.FogExp2(FOG_COLOR, 0.015);
 const camera = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 500);
 let renderer;
 try{
-  renderer = new THREE.WebGLRenderer({ antialias:true });
+  // antialias can't be toggled after context creation, so it's the one setting gated
+  // strictly by feature-detection rather than the (later) explicit device choice
+  renderer = new THREE.WebGLRenderer({ antialias: !lowPowerMode, powerPreference: lowPowerMode ? 'low-power' : 'high-performance' });
 }catch(e){
   // some phones/webviews refuse a WebGL context (low-power mode, restricted in-app browser, etc.) -
   // without this the whole script would die silently here and the page would just show empty HUD frames
   document.getElementById('loading').textContent = 'Это устройство не поддерживает 3D-графику (WebGL). Попробуй другой браузер.';
   throw e;
 }
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, lowPowerMode ? 1.5 : 2));
 if(renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = !lowPowerMode; // shadow pass is one of the most expensive things a mobile GPU can do
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 if(renderer.toneMapping !== undefined){
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -912,8 +922,8 @@ scene.add(gateLight);
 // sun/moon directional light - casts real shadows, follows the player so the shadow camera
 // only needs to cover a modest area instead of the whole map
 const sunMoonLight = new THREE.DirectionalLight(0xffffff, 1.6);
-sunMoonLight.castShadow = true;
-sunMoonLight.shadow.mapSize.set(1536,1536);
+sunMoonLight.castShadow = !lowPowerMode;
+sunMoonLight.shadow.mapSize.set(lowPowerMode ? 512 : 1536, lowPowerMode ? 512 : 1536);
 sunMoonLight.shadow.camera.near = 10;
 sunMoonLight.shadow.camera.far = 260;
 sunMoonLight.shadow.camera.left = -75;
@@ -968,7 +978,7 @@ function inRiver(x,z,extra){ extra = extra||0; return Math.abs(x-approxRiverX(z)
 
 // ================= GRASS =================
 (function genGrass(){
-  const GRASS_COUNT = 9000;
+  const GRASS_COUNT = lowPowerMode ? 2500 : 9000;
   const grassGeo = new THREE.ConeGeometry(0.14, 0.6, 4);
   const grassMat = new THREE.MeshStandardMaterial({ color:0x1c3018, roughness:1 });
   const grassMesh = new THREE.InstancedMesh(grassGeo, grassMat, GRASS_COUNT);
@@ -1020,7 +1030,12 @@ function randomFreeSpot(avoidR, existing){
 }
 
 // ================= TREES =================
-const trees = [];
+// Tree meshes are never individually added/removed/hidden at runtime (chopping just
+// decrements woodCharge and spawns debris), so all of them can share two InstancedMesh
+// draw calls instead of one Group+2 Mesh per tree - on ~1000 trees that's the difference
+// between ~2000 draw calls and 2.
+const trees = []; // gameplay data only: {x, z, canopyR, woodCharge}
+const treeVisuals = []; // {x, z, height, canopyR, rotY} used to build the instanced meshes below
 const trunkMat = new THREE.MeshStandardMaterial({ color:0x241a12, roughness:1 });
 const canopyMat = new THREE.MeshStandardMaterial({ color:0x142a1a, roughness:1, flatShading:true });
 (function genTrees(){
@@ -1043,21 +1058,8 @@ const canopyMat = new THREE.MeshStandardMaterial({ color:0x142a1a, roughness:1, 
     }
     if(ok){
       const height = rand(5,8);
-      const group = new THREE.Group();
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.5,height*0.5,6), trunkMat);
-      trunk.position.y = height*0.25;
-      trunk.castShadow = true;
-      trunk.receiveShadow = true;
-      group.add(trunk);
-      const canopy = new THREE.Mesh(new THREE.ConeGeometry(canopyR, height*0.85, 7), canopyMat);
-      canopy.position.y = height*0.55;
-      canopy.castShadow = true;
-      canopy.receiveShadow = true;
-      group.add(canopy);
-      group.position.set(x,0,z);
-      group.rotation.y = rand(0,6.28);
-      scene.add(group);
-      trees.push({x,z,canopyR, mesh:group, woodCharge: Math.floor(rand(2,5))});
+      trees.push({x,z,canopyR, woodCharge: Math.floor(rand(2,5))});
+      treeVisuals.push({x,z,height,canopyR,rotY:rand(0,6.28)});
     }
   }
 })();
@@ -1070,19 +1072,9 @@ const canopyMat = new THREE.MeshStandardMaterial({ color:0x142a1a, roughness:1, 
     if(inRiver(x,z,4)) return; // don't block the river mouth at the edges
     const canopyR = rand(1.8,3.0);
     const height = rand(6,9);
-    const group = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.5,height*0.5,6), trunkMat);
-    trunk.position.y = height*0.25;
-    trunk.castShadow = true; trunk.receiveShadow = true;
-    group.add(trunk);
-    const canopy = new THREE.Mesh(new THREE.ConeGeometry(canopyR, height*0.85, 7), canopyMat);
-    canopy.position.y = height*0.55;
-    canopy.castShadow = true; canopy.receiveShadow = true;
-    group.add(canopy);
-    group.position.set(x + rand(-1.5,1.5), 0, z + rand(-1.5,1.5));
-    group.rotation.y = rand(0,6.28);
-    scene.add(group);
-    trees.push({x, z, canopyR, mesh:group, woodCharge:0}); // already "spent" - purely a visual wall
+    const px = x + rand(-1.5,1.5), pz = z + rand(-1.5,1.5);
+    trees.push({x:px, z:pz, canopyR, woodCharge:0}); // already "spent" - purely a visual wall
+    treeVisuals.push({x:px, z:pz, height, canopyR, rotY:rand(0,6.28)});
   }
   const SPACING = 6.5;
   for(let x=-BOUND_X; x<=BOUND_X; x+=SPACING){
@@ -1093,6 +1085,31 @@ const canopyMat = new THREE.MeshStandardMaterial({ color:0x142a1a, roughness:1, 
     placeBorderTree(-BOUND_X+2, z);
     placeBorderTree(BOUND_X-2, z);
   }
+})();
+
+(function buildTreeInstances(){
+  const trunkGeo = new THREE.CylinderGeometry(0.35, 0.5, 1, 6); // unit height, stretched per-instance
+  const canopyGeo = new THREE.ConeGeometry(1, 1, 7); // unit radius/height, scaled per-instance
+  const treeTrunks = new THREE.InstancedMesh(trunkGeo, trunkMat, treeVisuals.length);
+  const treeCanopies = new THREE.InstancedMesh(canopyGeo, canopyMat, treeVisuals.length);
+  treeTrunks.castShadow = true; treeTrunks.receiveShadow = true;
+  treeCanopies.castShadow = true; treeCanopies.receiveShadow = true;
+  const dummy = new THREE.Object3D();
+  treeVisuals.forEach((tv, i)=>{
+    dummy.position.set(tv.x, tv.height*0.25, tv.z);
+    dummy.rotation.set(0, tv.rotY, 0);
+    dummy.scale.set(1, tv.height*0.5, 1);
+    dummy.updateMatrix();
+    treeTrunks.setMatrixAt(i, dummy.matrix);
+
+    dummy.position.set(tv.x, tv.height*0.55, tv.z);
+    dummy.scale.set(tv.canopyR, tv.height*0.85, tv.canopyR);
+    dummy.updateMatrix();
+    treeCanopies.setMatrixAt(i, dummy.matrix);
+  });
+  treeTrunks.instanceMatrix.needsUpdate = true;
+  treeCanopies.instanceMatrix.needsUpdate = true;
+  scene.add(treeTrunks, treeCanopies);
 })();
 
 // ================= PEOPLE (player / hunter) =================
@@ -1967,10 +1984,6 @@ window.addEventListener('mousemove', e=>{
 });
 
 // ================= TOUCH / MOBILE CONTROLS =================
-// Only a best-effort guess to pre-highlight a recommendation on the device-select
-// screen — the player's own choice there is what actually decides the control scheme.
-const autoDetectedTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0
-  || window.matchMedia('(pointer: coarse)').matches;
 document.getElementById(autoDetectedTouch ? 'deviceBtnMobile' : 'deviceBtnDesktop').classList.add('recommended');
 
 function chooseDevice(isMobile){
