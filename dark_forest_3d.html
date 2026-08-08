@@ -2,6 +2,11 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#020202">
 <title>Тёмный лес — 3D</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;800&family=Courier+Prime&display=swap');
@@ -20,16 +25,22 @@
     font-family:'Courier Prime', monospace;
     color:var(--parchment);
     user-select:none;
+    touch-action:none;
+    overscroll-behavior:none;
+    -webkit-user-select:none;
   }
   #wrap{
-    position:relative; width:100%; height:100%;
+    position:relative; width:100%; height:100%; height:100dvh;
     display:flex; align-items:center; justify-content:center;
     background:#000;
   }
   #stage{
     position:relative;
-    width:960px; height:600px;
-    max-width:100vw; max-height:100vh;
+    overflow:hidden;
+    /* pick whichever dimension the viewport actually limits, then derive the other
+       from the 960:600 design ratio so the canvas never stretches on odd screens */
+    width:min(960px, 100vw, calc(100vh * 960 / 600));
+    height:min(600px, 100vh, calc(100vw * 600 / 960));
     box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 0 2px #000;
   }
   #stage canvas{ position:absolute; top:0; left:0; width:100%; height:100%; display:block; }
@@ -55,7 +66,7 @@
 
   .dialogue{ position:absolute; bottom:0; left:0; width:100%; background:linear-gradient(180deg, transparent, rgba(8,6,4,0.97) 30%); padding:60px 40px 26px 40px; display:none; pointer-events:none; }
   .dialogue.show{ display:block; }
-  .dialogue-box{ max-width:680px; margin:0 auto; background:rgba(15,11,8,0.85); border:1px solid var(--panel-edge); border-radius:4px; padding:16px 20px; }
+  .dialogue-box{ max-width:680px; margin:0 auto; background:rgba(15,11,8,0.85); border:1px solid var(--panel-edge); border-radius:4px; padding:16px 20px; pointer-events:auto; cursor:pointer; }
   .dialogue-name{ font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--ember); margin-bottom:8px; font-family:'Bitter',serif; font-weight:800; }
   .dialogue-text{ font-size:14px; line-height:1.6; color:var(--parchment); }
   .dialogue-continue{ margin-top:10px; font-size:10px; color:var(--parchment); opacity:0.5; letter-spacing:1px; }
@@ -75,6 +86,17 @@
   .overlay p{ max-width:480px; font-size:14px; line-height:1.7; color:var(--parchment); opacity:0.85; margin-bottom:24px;}
   .overlay button{ pointer-events:auto; background:#1c1712; border:1px solid var(--ember-dim); color:var(--ember); font-family:'Bitter',serif; font-weight:600; letter-spacing:2px; text-transform:uppercase; padding:12px 28px; font-size:12px; cursor:pointer; border-radius:2px; }
   .overlay button:hover{ background:#2a2015; box-shadow:0 0 14px rgba(232,163,61,0.3); }
+
+  .device-choices{ display:flex; gap:16px; pointer-events:auto; }
+  .device-btn{
+    pointer-events:auto; background:#1c1712; border:1px solid var(--ember-dim); color:var(--parchment);
+    font-family:'Bitter',serif; padding:18px 22px; border-radius:4px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:6px; width:150px;
+  }
+  .device-btn:hover, .device-btn.recommended{ background:#2a2015; box-shadow:0 0 14px rgba(232,163,61,0.3); border-color:var(--ember); }
+  .device-btn-icon{ font-size:26px; color:var(--ember); }
+  .device-btn > span:nth-child(2){ font-weight:600; letter-spacing:1px; text-transform:uppercase; font-size:12px; }
+  .device-btn-desc{ font-size:10.5px; opacity:0.6; font-family:'Courier Prime', monospace; text-transform:none; letter-spacing:0; }
 
   .wolf-hp{ display:none !important; }
   .wolf-hp-fill{ height:100%; background:#c94444; }
@@ -123,6 +145,56 @@
     transition:opacity .3s;
   }
   .guide-arrow.hidden{ opacity:0; }
+
+  /* ============ TOUCH / MOBILE CONTROLS ============ */
+  .touch-controls{ display:none; }
+  body.touch-device .touch-controls{ display:block; }
+  body.touch-device .hint{ display:none; }
+
+  .joystick-zone{
+    position:absolute; left:18px; bottom:18px; width:132px; height:132px;
+    border-radius:50%; background:rgba(20,16,10,0.35); border:1px solid rgba(232,163,61,0.35);
+    touch-action:none; z-index:25; pointer-events:auto;
+  }
+  .joystick-knob{
+    position:absolute; left:50%; top:50%; width:56px; height:56px; margin:-28px 0 0 -28px;
+    border-radius:50%; background:rgba(232,163,61,0.55); border:1px solid rgba(232,163,61,0.85);
+    will-change:transform;
+  }
+  .touch-buttons{
+    position:absolute; right:16px; bottom:16px; z-index:25;
+    display:flex; flex-direction:column; align-items:flex-end; gap:10px;
+  }
+  .touch-btn-row{ display:flex; gap:10px; }
+  .touch-btn{
+    pointer-events:auto; -webkit-tap-highlight-color:transparent; user-select:none;
+    border-radius:50%; background:rgba(20,16,10,0.6); border:1px solid var(--ember-dim);
+    color:var(--ember); font-family:'Bitter',serif; font-weight:700; display:flex;
+    align-items:center; justify-content:center; touch-action:none; text-align:center; line-height:1;
+  }
+  .touch-btn.attack{ width:74px; height:74px; font-size:26px; }
+  .touch-btn.interact{ width:60px; height:60px; font-size:14px; letter-spacing:1px; }
+  .touch-btn.small{ width:46px; height:46px; font-size:16px; }
+  .touch-btn:active{ background:rgba(232,163,61,0.35); }
+
+  .rotate-hint{
+    position:absolute; inset:0; background:#020202; z-index:50;
+    display:none; align-items:center; justify-content:center; flex-direction:column;
+    text-align:center; padding:30px; color:var(--parchment); font-family:'Bitter',serif;
+  }
+  .rotate-hint .icon{ font-size:40px; margin-bottom:14px; }
+  @media (orientation:portrait){
+    body.touch-device .rotate-hint{ display:flex; }
+  }
+  @media (max-height:420px){
+    .joystick-zone{ width:104px; height:104px; left:10px; bottom:10px; }
+    .joystick-knob{ width:44px; height:44px; margin:-22px 0 0 -22px; }
+    .touch-buttons{ right:10px; bottom:10px; gap:6px; }
+    .touch-btn-row{ gap:6px; }
+    .touch-btn.attack{ width:58px; height:58px; font-size:20px; }
+    .touch-btn.interact{ width:48px; height:48px; font-size:12px; }
+    .touch-btn.small{ width:38px; height:38px; font-size:13px; }
+  }
 </style>
 </head>
 <body>
@@ -370,9 +442,48 @@
           <polygon points="20,4 3,42 37,42" fill="#e8a33d"/>
         </svg>
       </div>
+
+      <div class="touch-controls" id="touchControls">
+        <div class="joystick-zone" id="joystickZone">
+          <div class="joystick-knob" id="joystickKnob"></div>
+        </div>
+        <div class="touch-buttons">
+          <div class="touch-btn-row">
+            <div class="touch-btn small" id="btnDrink">💧</div>
+            <div class="touch-btn small" id="btnInv">I</div>
+            <div class="touch-btn small" id="btnSprint">⚡</div>
+          </div>
+          <div class="touch-btn-row">
+            <div class="touch-btn interact" id="btnInteract">E</div>
+            <div class="touch-btn attack" id="btnAttack">⚔</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="overlay show" id="startOverlay">
+    <div class="rotate-hint">
+      <div class="icon">⟳</div>
+      <div>Поверни устройство горизонтально —<br>«Тёмный лес» играется в альбомной ориентации.</div>
+    </div>
+
+    <div class="overlay show" id="deviceSelectOverlay">
+      <h1>Тёмный лес</h1>
+      <p>На чём ты играешь?<br>От этого зависит, какое управление показать.</p>
+      <div class="device-choices">
+        <button class="device-btn" id="deviceBtnDesktop" onclick="chooseDevice(false)">
+          <span class="device-btn-icon">⌨</span>
+          <span>Компьютер</span>
+          <span class="device-btn-desc">Клавиатура и мышь</span>
+        </button>
+        <button class="device-btn" id="deviceBtnMobile" onclick="chooseDevice(true)">
+          <span class="device-btn-icon">▤</span>
+          <span>Телефон / планшет</span>
+          <span class="device-btn-desc">Сенсорное управление</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="overlay" id="startOverlay">
       <h1>Тёмный лес</h1>
       <p>Самолёт разбился среди чёрных деревьев. Ты выжил — едва.<br>
       Где-то в темноте раздаются крики о помощи.<br><br>
@@ -451,7 +562,7 @@ scene.fog = new THREE.FogExp2(FOG_COLOR, 0.015);
 
 const camera = new THREE.PerspectiveCamera(58, 960/600, 0.1, 500);
 const renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setSize(960,600);
+renderer.setSize(960,600,false); // updateStyle=false: let the "#stage canvas" CSS rule (width/height:100%) scale it, not an inline style
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 if(renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;
@@ -1583,6 +1694,116 @@ window.addEventListener('mousemove', e=>{
     player.rotY -= e.movementX * 0.005;
   }
 });
+
+// ================= TOUCH / MOBILE CONTROLS =================
+// Only a best-effort guess to pre-highlight a recommendation on the device-select
+// screen — the player's own choice there is what actually decides the control scheme.
+const autoDetectedTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0
+  || window.matchMedia('(pointer: coarse)').matches;
+document.getElementById(autoDetectedTouch ? 'deviceBtnMobile' : 'deviceBtnDesktop').classList.add('recommended');
+
+function chooseDevice(isMobile){
+  document.body.classList.toggle('touch-device', isMobile);
+  document.getElementById('deviceSelectOverlay').classList.remove('show');
+  document.getElementById('startOverlay').classList.add('show');
+}
+
+// tapping the dialogue text also advances it (mirrors the "E" key, for players without a keyboard)
+document.getElementById('dialogue').addEventListener('click', ()=>{
+  if(!dialogueOpen) return;
+  const atOfferEnd = dialogueOptions.isOffer && dialogueIndex === dialogueQueue.length - 1;
+  if(!atOfferEnd) advanceDialogue();
+});
+
+{
+  // Touch listeners are attached unconditionally (they simply never fire without real
+  // touch input) so the player's on-screen choice, not feature detection, decides
+  // whether the touch UI is shown — see chooseDevice() above.
+  // ---- virtual joystick: drives the same keys[] booleans the keyboard uses,
+  // so all the existing movement code in update() works unchanged ----
+  const joyZone = document.getElementById('joystickZone');
+  const joyKnob = document.getElementById('joystickKnob');
+  const JOY_RADIUS = 46, JOY_DEADZONE = 0.28;
+  let joyTouchId = null, joyCenter = {x:0,y:0};
+
+  function joyReset(){
+    keys['w'] = keys['s'] = keys['a'] = keys['d'] = false;
+    joyKnob.style.transform = 'translate(0px,0px)';
+  }
+  function joyUpdate(clientX, clientY){
+    const dx = clientX - joyCenter.x, dz = clientY - joyCenter.y;
+    const len = Math.hypot(dx,dz) || 1;
+    const clamped = Math.min(len, JOY_RADIUS);
+    joyKnob.style.transform = `translate(${(dx/len)*clamped}px, ${(dz/len)*clamped}px)`;
+    const nx = dx/JOY_RADIUS, nz = dz/JOY_RADIUS;
+    keys['w'] = nz < -JOY_DEADZONE;
+    keys['s'] = nz > JOY_DEADZONE;
+    keys['a'] = nx < -JOY_DEADZONE;
+    keys['d'] = nx > JOY_DEADZONE;
+  }
+  joyZone.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    joyTouchId = t.identifier;
+    const r = joyZone.getBoundingClientRect();
+    joyCenter = {x:r.left+r.width/2, y:r.top+r.height/2};
+    joyUpdate(t.clientX, t.clientY);
+  }, {passive:false});
+  joyZone.addEventListener('touchmove', e=>{
+    for(const t of e.changedTouches){
+      if(t.identifier === joyTouchId){ e.preventDefault(); joyUpdate(t.clientX, t.clientY); }
+    }
+  }, {passive:false});
+  function joyEnd(e){
+    for(const t of e.changedTouches){ if(t.identifier === joyTouchId){ joyTouchId = null; joyReset(); } }
+  }
+  joyZone.addEventListener('touchend', joyEnd);
+  joyZone.addEventListener('touchcancel', joyEnd);
+
+  // ---- drag-to-look on the canvas itself, touch equivalent of the RMB-drag above ----
+  let lookTouchId = null, lookLastX = 0;
+  renderer.domElement.addEventListener('touchstart', e=>{
+    const t = e.changedTouches[0];
+    lookTouchId = t.identifier;
+    lookLastX = t.clientX;
+  }, {passive:true});
+  renderer.domElement.addEventListener('touchmove', e=>{
+    for(const t of e.changedTouches){
+      if(t.identifier === lookTouchId){
+        const dx = t.clientX - lookLastX;
+        lookLastX = t.clientX;
+        if(started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen){
+          player.rotY -= dx * 0.006;
+        }
+      }
+    }
+  }, {passive:true});
+  function lookEnd(e){
+    for(const t of e.changedTouches){ if(t.identifier === lookTouchId) lookTouchId = null; }
+  }
+  renderer.domElement.addEventListener('touchend', lookEnd);
+  renderer.domElement.addEventListener('touchcancel', lookEnd);
+
+  // ---- action buttons ----
+  // interact/attack are held exactly like their keyboard keys, so the edge-triggered
+  // logic in update() (eDown/!eWasDown, spaceDown/!spaceWasDown) fires identically
+  function bindHold(el, key){
+    el.addEventListener('touchstart', e=>{ e.preventDefault(); keys[key] = true; }, {passive:false});
+    el.addEventListener('touchend', e=>{ e.preventDefault(); keys[key] = false; }, {passive:false});
+    el.addEventListener('touchcancel', ()=>{ keys[key] = false; });
+  }
+  bindHold(document.getElementById('btnInteract'), 'e');
+  bindHold(document.getElementById('btnAttack'), ' ');
+
+  function bindTap(el, fn){
+    el.addEventListener('touchstart', e=>{ e.preventDefault(); fn(); }, {passive:false});
+  }
+  bindTap(document.getElementById('btnSprint'), trySprint);
+  bindTap(document.getElementById('btnInv'), ()=>{
+    if(started && !dialogueOpen && !questMenuOpen && !workbenchOpen) toggleInventory();
+  });
+  bindTap(document.getElementById('btnDrink'), drinkWater);
+}
 
 // ================= COMBAT =================
 const CHOP_RANGE = 4.5;
