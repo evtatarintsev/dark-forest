@@ -37,11 +37,10 @@
   #stage{
     position:relative;
     overflow:hidden;
-    /* pick whichever dimension the viewport actually limits, then derive the other
-       from the 960:600 design ratio so the canvas never stretches on odd screens */
-    width:min(960px, 100vw, calc(100vh * 960 / 600));
-    height:min(600px, 100vh, calc(100vw * 600 / 960));
-    box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 0 2px #000;
+    /* fills the whole viewport; JS (fitStage) sets the exact pixel size so the renderer
+       and camera aspect can track it precisely instead of being locked to a fixed ratio */
+    width:100%;
+    height:100%;
   }
   #stage canvas{ position:absolute; top:0; left:0; width:100%; height:100%; display:block; }
   #vignette{
@@ -774,7 +773,7 @@ const FOG_COLOR = 0x03050a;
 scene.background = new THREE.Color(FOG_COLOR);
 scene.fog = new THREE.FogExp2(FOG_COLOR, 0.015);
 
-const camera = new THREE.PerspectiveCamera(58, 960/600, 0.1, 500);
+const camera = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 500);
 let renderer;
 try{
   renderer = new THREE.WebGLRenderer({ antialias:true });
@@ -784,7 +783,6 @@ try{
   document.getElementById('loading').textContent = 'Это устройство не поддерживает 3D-графику (WebGL). Попробуй другой браузер.';
   throw e;
 }
-renderer.setSize(960,600,false); // updateStyle=false: let the "#stage canvas" CSS rule (width/height:100%) scale it, not an inline style
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 if(renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;
@@ -800,15 +798,15 @@ renderer.domElement.addEventListener('webglcontextlost', (e)=>{
   document.getElementById('loading').textContent = 'Графический контекст потерян. Обнови страницу.';
 });
 
-// JS-driven sizing: bulletproof against any browser's quirks with the CSS calc()/min()
-// fallback below (mobile Safari/Samsung Internet address-bar resize edge cases, etc.)
+// the game fills the whole viewport (no fixed-aspect letterboxing) - this recomputes the
+// renderer resolution and camera aspect to match on load and on every resize/rotation
 function fitStage(){
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const ratio = 960/600;
-  let w = vw, h = vw/ratio;
-  if(h > vh){ h = vh; w = vh*ratio; }
-  stageEl.style.width = Math.round(w)+'px';
-  stageEl.style.height = Math.round(h)+'px';
+  const w = window.innerWidth, h = window.innerHeight;
+  stageEl.style.width = w+'px';
+  stageEl.style.height = h+'px';
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false); // updateStyle=false: canvas CSS stays 100%/100%, matching #stage
 }
 fitStage();
 window.addEventListener('resize', fitStage);
@@ -2590,8 +2588,8 @@ function updateWolfHpBars(){
     const v = new THREE.Vector3(w.x, w.kind==='bear'?3.2:2.6, w.z);
     v.project(camera);
     if(v.z > 1){ w.hpEl.style.display='none'; continue; }
-    const sx = (v.x*0.5+0.5) * 960 - 17;
-    const sy = (-v.y*0.5+0.5) * 600;
+    const sx = (v.x*0.5+0.5) * stageEl.clientWidth - 17;
+    const sy = (-v.y*0.5+0.5) * stageEl.clientHeight;
     w.hpEl.style.display='block';
     w.hpEl.style.left = sx+'px';
     w.hpEl.style.top = sy+'px';
