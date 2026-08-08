@@ -1129,6 +1129,78 @@ const playerMesh = buildPerson(0x3d3427, 0xd9c9a3);
 playerMesh.visible = false; // first-person: no need to render own body
 scene.add(playerMesh);
 
+// ================= FIRST-PERSON HANDS (viewmodel) =================
+// Attached to the camera (in camera-local space), not the world, so they stay fixed
+// at the bottom of the screen regardless of where the player is looking.
+scene.add(camera); // required: renderer only traverses from `scene`, so camera-child objects need camera in the graph
+const skinMat = new THREE.MeshStandardMaterial({ color:0xd9c9a3, roughness:0.8 });
+const sleeveMat = new THREE.MeshStandardMaterial({ color:0x3d3427, roughness:0.9 });
+function buildHand(){
+  const g = new THREE.Group();
+  const sleeve = new THREE.Mesh(new THREE.BoxGeometry(0.17,0.17,0.5), sleeveMat);
+  sleeve.position.z = 0.1;
+  g.add(sleeve);
+  const fist = new THREE.Mesh(new THREE.BoxGeometry(0.15,0.15,0.17), skinMat);
+  fist.position.z = -0.28;
+  g.add(fist);
+  return g;
+}
+const handsRig = new THREE.Group();
+const rightHand = buildHand();
+rightHand.position.set(0.36, -0.4, -0.62);
+rightHand.rotation.set(-0.15, -0.25, 0.15);
+rightHand.scale.setScalar(0.68);
+handsRig.add(rightHand);
+const leftHand = buildHand();
+leftHand.position.set(-0.34, -0.42, -0.58);
+leftHand.rotation.set(-0.1, 0.25, -0.15);
+leftHand.scale.setScalar(0.62);
+handsRig.add(leftHand);
+camera.add(handsRig);
+
+// weapon model in the right hand, rebuilt whenever the equipped weapon changes
+const weaponWoodMat = new THREE.MeshStandardMaterial({ color:0xa5691f, roughness:0.8 });
+const weaponMetalMat = new THREE.MeshStandardMaterial({ color:0xb8bec4, roughness:0.4, metalness:0.6 });
+const weaponStoneMat = new THREE.MeshStandardMaterial({ color:0x6a6a66, roughness:1, flatShading:true });
+function buildWeaponMesh(kind){
+  const g = new THREE.Group();
+  if(kind === 'knife' || kind === 'stoneKnife'){
+    const mat = kind === 'knife' ? weaponMetalMat : weaponStoneMat;
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.14,5), weaponWoodMat);
+    handle.position.y = 0.05;
+    g.add(handle);
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.045,0.26,0.045), mat);
+    blade.position.y = 0.26;
+    g.add(blade);
+  } else if(kind === 'axe' || kind === 'stoneAxe'){
+    const mat = kind === 'axe' ? weaponMetalMat : weaponStoneMat;
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.42,5), weaponWoodMat);
+    handle.position.y = 0.18;
+    g.add(handle);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.15,0.045), mat);
+    head.position.set(0.08,0.38,0);
+    g.add(head);
+  } else if(kind === 'pickaxe'){
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.44,5), weaponWoodMat);
+    handle.position.y = 0.19;
+    g.add(handle);
+    const head = new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,0.34,4), weaponMetalMat);
+    head.rotation.z = Math.PI/2;
+    head.position.y = 0.42;
+    g.add(head);
+  }
+  // fists: empty group, nothing to hold
+  g.traverse(o=>{ if(o.isMesh) o.castShadow = true; });
+  return g;
+}
+let weaponMesh = buildWeaponMesh('fists');
+rightHand.add(weaponMesh);
+function refreshWeaponMesh(){
+  rightHand.remove(weaponMesh);
+  weaponMesh = buildWeaponMesh(player.weapon);
+  rightHand.add(weaponMesh);
+}
+
 // hunter: injured, lying on the ground near the dead fire pit
 const hunterMesh = buildPerson(0x5c4a34, 0xe8c98a);
 hunterMesh.rotation.z = Math.PI/2; // lay the body down
@@ -1475,6 +1547,10 @@ const player = {
   groundY: 0
 };
 let climbedRockOnce = false;
+let playerIsMoving = false; // read by the FPS-hands walk bob, set each frame in update()
+let handSwingT = 0; // countdown driving the attack punch/swing animation
+const HAND_SWING_DURATION = 0.22;
+function triggerHandSwing(){ handSwingT = HAND_SWING_DURATION; }
 const HUNGER_DRAIN = 100/300; // empties over ~5 minutes
 const THIRST_DRAIN = 100/240; // empties over ~4 minutes
 const MEAT_HUNGER_RESTORE = 35;
@@ -1714,6 +1790,7 @@ function craftKnife(){
   player.inventory.wolfFangs -= 1;
   player.weapon = 'knife';
   showToast(t("toast_craft_knife"));
+  refreshWeaponMesh();
   refreshWorkbench();
   refreshInventory();
 }
@@ -1723,6 +1800,7 @@ function craftAxe(){
   player.inventory.wolfFangs -= 3;
   player.weapon = 'axe';
   showToast(t("toast_craft_axe"));
+  refreshWeaponMesh();
   refreshWorkbench();
   refreshInventory();
 }
@@ -1732,6 +1810,7 @@ function craftStoneKnife(){
   player.inventory.stone -= 1;
   player.weapon = 'stoneKnife';
   showToast(t("toast_craft_stoneknife"));
+  refreshWeaponMesh();
   refreshWorkbench();
   refreshInventory();
 }
@@ -1741,6 +1820,7 @@ function craftStoneAxe(){
   player.inventory.stone -= 3;
   player.weapon = 'stoneAxe';
   showToast(t("toast_craft_stoneaxe"));
+  refreshWeaponMesh();
   refreshWorkbench();
   refreshInventory();
 }
@@ -1751,6 +1831,7 @@ function craftPickaxe(){
   player.inventory.wolfFangs -= PICKAXE_FANGS_COST;
   player.weapon = 'pickaxe';
   showToast(t("toast_craft_pickaxe"));
+  refreshWeaponMesh();
   refreshWorkbench();
   refreshInventory();
 }
@@ -2168,6 +2249,7 @@ function performAttackAction(){
     doAttack();
   }
   player.attackCd = WEAPON_STATS[player.weapon].cooldown;
+  triggerHandSwing();
 }
 function allHostiles(){
   const list = [...wolves, ...nightWolves];
@@ -2428,6 +2510,7 @@ function update(dt){
   }
   eWasDown = eDown;
 
+  if(dialogueOpen || questMenuOpen || invOpen || workbenchOpen || !started) playerIsMoving = false;
   if(!dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen && started){
     let turn = 0, move = 0, strafe = 0;
     if(keys['arrowleft']) turn += 1;
@@ -2437,6 +2520,7 @@ function update(dt){
     if(keys['w']||keys['arrowup']) move += 1;
     if(keys['s']||keys['arrowdown']) move -= 1;
     const isMoving = (move !== 0 || strafe !== 0);
+    playerIsMoving = isMoving;
 
     if(sprintCooldown > 0) sprintCooldown -= dt;
     if(sprintTimeLeft > 0){
@@ -2617,11 +2701,28 @@ function updateHpBar(){
 }
 
 // camera: first-person, at the player's eye level, looking in the facing direction
+let handBobT = 0;
 function updateCamera(dt){
   const eyeHeight = 2.5 + player.groundY;
   const fx = Math.sin(player.rotY), fz = Math.cos(player.rotY);
   camera.position.set(player.x, eyeHeight, player.z);
   camera.lookAt(player.x + fx*10, eyeHeight, player.z + fz*10);
+  updateHands(dt);
+}
+
+function updateHands(dt){
+  // idle sway when standing still, a faster/bigger bob while walking
+  handBobT += dt * (playerIsMoving ? 8 : 1.6);
+  const bobAmt = playerIsMoving ? 0.022 : 0.005;
+  handsRig.position.y = Math.sin(handBobT) * bobAmt;
+  handsRig.position.x = Math.cos(handBobT*0.5) * bobAmt*0.6;
+
+  // attack/chop/mine/butcher swing: a quick forward jab that eases back out
+  if(handSwingT > 0) handSwingT = Math.max(0, handSwingT - dt);
+  const swingEase = Math.sin((handSwingT/HAND_SWING_DURATION) * Math.PI); // 0 -> 1 -> 0
+  rightHand.position.z = -0.55 - swingEase*0.32;
+  rightHand.position.y = -0.34 + swingEase*0.06;
+  rightHand.rotation.x = -0.15 - swingEase*0.5;
 }
 
 function doWin(){
