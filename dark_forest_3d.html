@@ -33,6 +33,11 @@
     box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 0 2px #000;
   }
   #stage canvas{ position:absolute; top:0; left:0; width:100%; height:100%; display:block; }
+  #vignette{
+    position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%);
+    z-index:5;
+  }
 
   .hud{ position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; font-family:'Bitter', serif; }
   .bar-wrap{ position:absolute; top:14px; left:14px; background:rgba(10,8,6,0.55); border:1px solid var(--panel-edge); padding:8px 12px; border-radius:3px; }
@@ -45,7 +50,7 @@
   .pip{ width:16px; height:16px; border:1px solid var(--ember-dim); background:#1a1108; transform:rotate(45deg); }
   .pip.on{ background:var(--ember); box-shadow:0 0 8px var(--ember); }
 
-  .quest-banner{ position:absolute; top:14px; left:50%; transform:translateX(-50%); background:rgba(10,8,6,0.6); border:1px solid var(--panel-edge); padding:6px 18px; font-size:13px; letter-spacing:0.5px; color:var(--ember); white-space:nowrap; }
+  .quest-banner{ display:none; }
   .hint{ position:absolute; bottom:12px; left:14px; font-size:11px; color:var(--parchment); opacity:0.55; font-family:'Courier Prime', monospace; }
 
   .dialogue{ position:absolute; bottom:0; left:0; width:100%; background:linear-gradient(180deg, transparent, rgba(8,6,4,0.97) 30%); padding:60px 40px 26px 40px; display:none; pointer-events:none; }
@@ -71,7 +76,7 @@
   .overlay button{ pointer-events:auto; background:#1c1712; border:1px solid var(--ember-dim); color:var(--ember); font-family:'Bitter',serif; font-weight:600; letter-spacing:2px; text-transform:uppercase; padding:12px 28px; font-size:12px; cursor:pointer; border-radius:2px; }
   .overlay button:hover{ background:#2a2015; box-shadow:0 0 14px rgba(232,163,61,0.3); }
 
-  .wolf-hp{ position:absolute; width:34px; height:5px; background:rgba(0,0,0,0.55); border:1px solid #000; pointer-events:none; }
+  .wolf-hp{ display:none !important; }
   .wolf-hp-fill{ height:100%; background:#c94444; }
 
   .quest-menu{ position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(2,2,2,0.75); display:none; align-items:center; justify-content:center; z-index:15; pointer-events:auto; }
@@ -124,6 +129,7 @@
 <div id="wrap">
   <div id="stage">
     <div id="loading">ЗАГРУЗКА ЛЕСА...</div>
+    <div id="vignette"></div>
     <div class="hud">
       <div class="bar-wrap">
         <div class="bar-label" style="font-size:12px; color:var(--ember); opacity:1; letter-spacing:2px; margin-bottom:8px;">ДЕНЬ <span id="dayNum">1</span> <span id="nightTag" style="color:#c94444; display:none;">• НОЧЬ</span></div>
@@ -131,6 +137,10 @@
         <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
         <div class="bar-label" style="margin-top:8px;">Спринт</div>
         <div class="hp-bar" id="staminaBar"><div class="hp-fill" id="staminaFill" style="width:100%; background:linear-gradient(90deg, #6b7c4a, #9fb86a);"></div></div>
+        <div class="bar-label" style="margin-top:8px;">Голод</div>
+        <div class="hp-bar" id="hungerBar"><div class="hp-fill" id="hungerFill" style="width:100%; background:linear-gradient(90deg, #a5691f, #e0a545);"></div></div>
+        <div class="bar-label" style="margin-top:8px;">Жажда</div>
+        <div class="hp-bar" id="thirstBar"><div class="hp-fill" id="thirstFill" style="width:100%; background:linear-gradient(90deg, #185fa5, #5aa8e8);"></div></div>
       </div>
       <div class="trust-wrap">
         <div class="bar-label">Доверие охотника</div>
@@ -141,7 +151,7 @@
         </div>
       </div>
       <div class="quest-banner" id="questBanner">Очнись...</div>
-      <div class="hint">W/S — вперёд/назад &nbsp;•&nbsp; A/D или ПКМ+мышь — поворот &nbsp;•&nbsp; SHIFT — спринт &nbsp;•&nbsp; E — говорить / верстак &nbsp;•&nbsp; ПРОБЕЛ — атаковать &nbsp;•&nbsp; I — инвентарь &nbsp;•&nbsp; R — травы &nbsp;•&nbsp; T — факел</div>
+      <div class="hint">W/S — вперёд/назад &nbsp;•&nbsp; A/D или ПКМ+мышь — поворот &nbsp;•&nbsp; SHIFT — спринт &nbsp;•&nbsp; E — говорить / верстак / готовить &nbsp;•&nbsp; ЛКМ / ПРОБЕЛ — атаковать / рубить / копать / разделывать &nbsp;•&nbsp; I — инвентарь &nbsp;•&nbsp; R — травы &nbsp;•&nbsp; T — факел &nbsp;•&nbsp; F — есть мясо &nbsp;•&nbsp; G — пить у реки</div>
 
       <div class="quest-menu" id="questMenu" onclick="if(event.target===this) closeQuestMenu()">
         <div class="quest-menu-box">
@@ -211,6 +221,13 @@
             </div>
           </div>
           <div class="quest-item">
+            <div class="inv-icon">🪨</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Камень <span id="invStoneCount">(0)</span></div>
+              <div class="quest-item-desc">Добывается киркой у валуна. Замена клыкам в крафте.</div>
+            </div>
+          </div>
+          <div class="quest-item">
             <div class="inv-icon">⚔️</div>
             <div class="quest-item-body">
               <div class="quest-item-name">Оружие: <span id="invWeaponName">Кулаки</span></div>
@@ -225,6 +242,22 @@
             </div>
             <button class="choice-btn accept inv-use-btn" id="invUseTorchBtn" onclick="useTorch()">Заж.</button>
           </div>
+          <div class="quest-item">
+            <div class="inv-icon">🥩</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Сырое мясо <span id="invRawMeatCount">(0)</span></div>
+              <div class="quest-item-desc">Лучше приготовь у костра (E). Есть сырым — риск отравления.</div>
+            </div>
+            <button class="choice-btn decline inv-use-btn" id="invEatRawBtn" onclick="eatRawMeat()">Рискнуть</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🍖</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Готовое мясо <span id="invCookedMeatCount">(0)</span></div>
+              <div class="quest-item-desc">Лечит на 40 здоровья. Съесть — клавиша F.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="invEatMeatBtn" onclick="eatMeat()">Есть</button>
+          </div>
           <div class="quest-menu-hint">[ I или клик в стороне — закрыть ]</div>
         </div>
       </div>
@@ -235,10 +268,9 @@
           <div class="quest-item">
             <div class="inv-icon">🪵</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Сделать палки</div>
-              <div class="quest-item-desc">Есть: <span id="wbSticks">0</span> палок · Клыков: <span id="wbFangs">0</span></div>
+              <div class="quest-item-name">Запасы</div>
+              <div class="quest-item-desc">Палок: <span id="wbSticks">0</span> · Клыков: <span id="wbFangs">0</span> · Камня: <span id="wbStone">0</span></div>
             </div>
-            <button class="choice-btn accept inv-use-btn" onclick="craftSticks()">+20</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🔪</div>
@@ -257,12 +289,52 @@
             <button class="choice-btn accept inv-use-btn" id="wbAxeBtn" onclick="craftAxe()">Сделать</button>
           </div>
           <div class="quest-item">
+            <div class="inv-icon">🔪</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Каменный нож</div>
+              <div class="quest-item-desc">10 палок + 1 камень. То же самое, но без клыков.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="wbStoneKnifeBtn" onclick="craftStoneKnife()">Сделать</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🪓</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Каменный топор</div>
+              <div class="quest-item-desc">20 палок + 3 камня. То же самое, но без клыков.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="wbStoneAxeBtn" onclick="craftStoneAxe()">Сделать</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">⛏️</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Кирка</div>
+              <div class="quest-item-desc">2 палки + 3 клыка. Неплохой урон, средняя скорость. Копай ей камень у валуна.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="wbPickaxeBtn" onclick="craftPickaxe()">Сделать</button>
+          </div>
+          <div class="quest-item">
             <div class="inv-icon">🔥</div>
             <div class="quest-item-body">
               <div class="quest-item-name">Факел</div>
               <div class="quest-item-desc">2 палки + 1 трава. Ярче светит, горит одну ночь.</div>
             </div>
             <button class="choice-btn accept inv-use-btn" id="wbTorchBtn" onclick="craftTorch()">Сделать</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🪵</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Хворост</div>
+              <div class="quest-item-desc" id="wbFirewoodDesc">3 палки + 2 травы. Заменяет одну найденную вязанку.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="wbFirewoodBtn" onclick="craftFirewoodItem()">Сделать</button>
+          </div>
+          <div class="quest-item">
+            <div class="inv-icon">🏠</div>
+            <div class="quest-item-body">
+              <div class="quest-item-name">Дом</div>
+              <div class="quest-item-desc" id="wbHouseDesc">40 палок. Строится вокруг охотника, с дверью — открой её вплотную.</div>
+            </div>
+            <button class="choice-btn accept inv-use-btn" id="wbHouseBtn" onclick="craftHouse()">Построить</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">⚔️</div>
@@ -288,7 +360,9 @@
 
       <div id="wolfHpLayer"></div>
       <div class="toast" id="toast"></div>
+
       <div class="drown-warning" id="drownWarning">Ты начинаешь задыхаться...</div>
+      <div class="drown-warning" id="poisonWarning" style="color:#639922; text-shadow:0 0 16px rgba(99,153,34,0.8); top:32%;">Тебя тошнит от отравления...</div>
 
       <div class="guide-arrow" id="guideArrow">
         <svg viewBox="0 0 40 110" width="34" height="94">
@@ -344,8 +418,10 @@ function showToast(text){
 const BOUND_X = 255, BOUND_Z = 144;
 const PLAYER_START = {x:-210, z:0};
 const HUNTER_POS = {x:204, z:0};
-const CAMPFIRE_POS = {x:180, z:18};
-const WORKBENCH_POS = {x:196, z:-14};
+const HOUSE_POS = HUNTER_POS;
+const CAMPFIRE_POS = {x:204, z:10};
+const WORKBENCH_POS = {x: HOUSE_POS.x + 2.5, z: HOUSE_POS.z - 2};
+const ROCK_POS = {x:-100, z:45};
 
 // Exit gate is hidden in a random corner of the map, revealed only after
 // the player has completed both hunter quests (firewood + wolves).
@@ -378,7 +454,90 @@ const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(960,600);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 if(renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+if(renderer.toneMapping !== undefined){
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+}
 stageEl.insertBefore(renderer.domElement, stageEl.firstChild);
+
+// ================= SKY, SUN & MOON =================
+const DAY_SKY_COLOR = new THREE.Color(0x7fa3c4);
+const NIGHT_SKY_COLOR = new THREE.Color(0x030612);
+const tmpSkyColor = new THREE.Color();
+const SUN_COLOR = new THREE.Color(0xfff2d8);
+const MOON_COLOR = new THREE.Color(0xaec4e8);
+const tmpSunColor = new THREE.Color();
+
+const skyDome = new THREE.Mesh(
+  new THREE.SphereGeometry(420, 24, 16),
+  new THREE.MeshBasicMaterial({ color: 0x7fa3c4, side: THREE.BackSide, fog: false })
+);
+scene.add(skyDome);
+
+function makeGlowTexture(inner, mid, outer){
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const c2d = canvas.getContext('2d');
+  const grad = c2d.createRadialGradient(size/2,size/2,0, size/2,size/2,size/2);
+  grad.addColorStop(0, inner);
+  grad.addColorStop(0.45, mid);
+  grad.addColorStop(1, outer);
+  c2d.fillStyle = grad;
+  c2d.fillRect(0,0,size,size);
+  return new THREE.CanvasTexture(canvas);
+}
+const sunTexture = makeGlowTexture('rgba(255,250,230,1)', 'rgba(255,205,120,0.75)', 'rgba(255,180,80,0)');
+const moonTexture = makeGlowTexture('rgba(232,238,246,1)', 'rgba(190,204,224,0.65)', 'rgba(160,180,210,0)');
+
+const sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map:sunTexture, transparent:true, depthWrite:false, fog:false }));
+sunSprite.scale.set(85,85,1);
+scene.add(sunSprite);
+
+const moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map:moonTexture, transparent:true, depthWrite:false, fog:false, opacity:0 }));
+moonSprite.scale.set(60,60,1);
+scene.add(moonSprite);
+
+// ---- fireflies: small glowing particles drifting near the ground ----
+const FIREFLY_COUNT = 25;
+const fireflyTexture = makeGlowTexture('rgba(255,250,190,1)', 'rgba(255,230,140,0.7)', 'rgba(255,210,110,0)');
+const fireflyGeo = new THREE.BufferGeometry();
+const fireflyPositions = new Float32Array(FIREFLY_COUNT*3);
+const fireflyData = [];
+for(let i=0;i<FIREFLY_COUNT;i++){
+  fireflyData.push({
+    x: PLAYER_START.x + rand(-40,40), z: PLAYER_START.z + rand(-40,40),
+    baseY: rand(0.6,2.4), phase: rand(0,6.28), speed: rand(0.15,0.4),
+    angle: rand(0,6.28)
+  });
+}
+fireflyGeo.setAttribute('position', new THREE.Float32BufferAttribute(fireflyPositions,3));
+const fireflyMat = new THREE.PointsMaterial({
+  size:1.1, map:fireflyTexture, transparent:true, depthWrite:false,
+  blending:THREE.AdditiveBlending, sizeAttenuation:true, fog:false
+});
+const fireflies = new THREE.Points(fireflyGeo, fireflyMat);
+scene.add(fireflies);
+function updateFireflies(dt){
+  const pos = fireflyGeo.attributes.position.array;
+  for(let i=0;i<FIREFLY_COUNT;i++){
+    const f = fireflyData[i];
+    f.angle += (Math.random()-0.5)*0.6*dt;
+    f.x += Math.cos(f.angle)*f.speed*dt*6;
+    f.z += Math.sin(f.angle)*f.speed*dt*6;
+    const dx = f.x-player.x, dz = f.z-player.z;
+    if(dx*dx+dz*dz > 50*50){
+      f.x = player.x + rand(-35,35);
+      f.z = player.z + rand(-35,35);
+    }
+    pos[i*3] = f.x;
+    pos[i*3+1] = f.baseY + Math.sin(time*1.4+f.phase)*0.4;
+    pos[i*3+2] = f.z;
+  }
+  fireflyGeo.attributes.position.needsUpdate = true;
+}
 
 // lighting
 const DAY_AMBIENT = 1.4, DAY_HEMI = 1.0, DAY_FOG = 0.015;
@@ -400,20 +559,27 @@ const gateLight = new THREE.PointLight(0xe8a33d, 0, 22, 2);
 gateLight.position.set(EXIT_POS.x, 3, EXIT_POS.z);
 scene.add(gateLight);
 
+// sun/moon directional light - casts real shadows, follows the player so the shadow camera
+// only needs to cover a modest area instead of the whole map
+const sunMoonLight = new THREE.DirectionalLight(0xffffff, 1.6);
+sunMoonLight.castShadow = true;
+sunMoonLight.shadow.mapSize.set(1536,1536);
+sunMoonLight.shadow.camera.near = 10;
+sunMoonLight.shadow.camera.far = 260;
+sunMoonLight.shadow.camera.left = -75;
+sunMoonLight.shadow.camera.right = 75;
+sunMoonLight.shadow.camera.top = 75;
+sunMoonLight.shadow.camera.bottom = -75;
+sunMoonLight.shadow.bias = -0.0018;
+scene.add(sunMoonLight);
+scene.add(sunMoonLight.target);
+
 // ground
 const groundMat = new THREE.MeshStandardMaterial({ color:0x0b140b, roughness:1, metalness:0 });
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(BOUND_X*2+30, BOUND_Z*2+30, 1,1), groundMat);
 ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
 scene.add(ground);
-
-// subtle ground patches for texture variety
-const patchMat = new THREE.MeshStandardMaterial({ color:0x121f10, roughness:1 });
-for(let i=0;i<220;i++){
-  const p = new THREE.Mesh(new THREE.CircleGeometry(rand(2,5), 6), patchMat);
-  p.rotation.x = -Math.PI/2;
-  p.position.set(rand(-BOUND_X,BOUND_X), 0.01, rand(-BOUND_Z,BOUND_Z));
-  scene.add(p);
-}
 
 // ================= RIVER =================
 const RIVER_BASE_X = -30, RIVER_AMPLITUDE = 24, RIVER_FREQ = 0.045, RIVER_WIDTH = 13;
@@ -428,7 +594,7 @@ function inRiver(x,z,extra){ extra = extra||0; return Math.abs(x-approxRiverX(z)
   const positions = [];
   for(const p of points){
     const nx = RIVER_WIDTH/2, nz = 0; // river banks run mostly along Z, offset along local X
-    positions.push(p.x-nx, 0.05, p.z-nz, p.x+nx, 0.05, p.z+nz);
+    positions.push(p.x-nx, 0.12, p.z-nz, p.x+nx, 0.12, p.z+nz);
   }
   const indices = [];
   for(let i=0;i<points.length-1;i++){
@@ -441,11 +607,39 @@ function inRiver(x,z,extra){ extra = extra||0; return Math.abs(x-approxRiverX(z)
   geo.computeVertexNormals();
   const waterMat = new THREE.MeshStandardMaterial({
     color:0x0e2a38, emissive:0x0a3a4a, emissiveIntensity:0.5,
-    roughness:0.25, metalness:0.15, transparent:true, opacity:0.88
+    roughness:0.25, metalness:0.15, transparent:true, opacity:0.88,
+    side: THREE.DoubleSide, depthWrite: true
   });
   const riverMesh = new THREE.Mesh(geo, waterMat);
+  riverMesh.renderOrder = 1;
   scene.add(riverMesh);
   window.__riverWaterMat = waterMat; // for subtle shimmer animation in the update loop
+})();
+
+// ================= GRASS =================
+(function genGrass(){
+  const GRASS_COUNT = 9000;
+  const grassGeo = new THREE.ConeGeometry(0.14, 0.6, 4);
+  const grassMat = new THREE.MeshStandardMaterial({ color:0x1c3018, roughness:1 });
+  const grassMesh = new THREE.InstancedMesh(grassGeo, grassMat, GRASS_COUNT);
+  grassMesh.receiveShadow = true;
+  const dummy = new THREE.Object3D();
+  let placed = 0, attempts = 0;
+  while(placed < GRASS_COUNT && attempts < GRASS_COUNT*2){
+    attempts++;
+    const x = rand(-BOUND_X, BOUND_X), z = rand(-BOUND_Z, BOUND_Z);
+    if(inRiver(x,z,2)) continue;
+    const s = rand(0.7,1.4);
+    dummy.position.set(x, 0.28*s, z);
+    dummy.rotation.y = rand(0,6.28);
+    dummy.scale.set(s,s,s);
+    dummy.updateMatrix();
+    grassMesh.setMatrixAt(placed, dummy.matrix);
+    placed++;
+  }
+  grassMesh.count = placed;
+  grassMesh.instanceMatrix.needsUpdate = true;
+  scene.add(grassMesh);
 })();
 
 // ================= HELPER: PLACE RANDOM SPOT =================
@@ -463,6 +657,8 @@ function randomFreeSpot(avoidR, existing){
     if(dist(x,z,HUNTER_POS.x,HUNTER_POS.z) < 16) continue;
     if(dist(x,z,EXIT_POS.x,EXIT_POS.z) < 11) continue;
     if(dist(x,z,WORKBENCH_POS.x,WORKBENCH_POS.z) < 10) continue;
+    if(dist(x,z,ROCK_POS.x,ROCK_POS.z) < 14) continue;
+    if(dist(x,z,HOUSE_POS.x,HOUSE_POS.z) < 12) continue;
     if(inRiver(x,z,2)) continue;
     if(collidesTrees(x,z,avoidR)) continue;
     let tooClose=false;
@@ -478,7 +674,7 @@ const trees = [];
 const trunkMat = new THREE.MeshStandardMaterial({ color:0x241a12, roughness:1 });
 const canopyMat = new THREE.MeshStandardMaterial({ color:0x142a1a, roughness:1, flatShading:true });
 (function genTrees(){
-  const forbidden = [ [PLAYER_START.x,PLAYER_START.z,13], [HUNTER_POS.x,HUNTER_POS.z,16], [EXIT_POS.x,EXIT_POS.z,13], [WORKBENCH_POS.x,WORKBENCH_POS.z,9] ];
+  const forbidden = [ [PLAYER_START.x,PLAYER_START.z,13], [HUNTER_POS.x,HUNTER_POS.z,16], [EXIT_POS.x,EXIT_POS.z,13], [WORKBENCH_POS.x,WORKBENCH_POS.z,9], [ROCK_POS.x,ROCK_POS.z,14], [HOUSE_POS.x,HOUSE_POS.z,12] ];
   const WOLF_CLEARANCE = 3.4; // wolf hitbox diameter (2.8) plus buffer, so gaps between trees are always passable
   const targetCount = 480;
   let attempts=0;
@@ -500,15 +696,52 @@ const canopyMat = new THREE.MeshStandardMaterial({ color:0x142a1a, roughness:1, 
       const group = new THREE.Group();
       const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.5,height*0.5,6), trunkMat);
       trunk.position.y = height*0.25;
+      trunk.castShadow = true;
+      trunk.receiveShadow = true;
       group.add(trunk);
       const canopy = new THREE.Mesh(new THREE.ConeGeometry(canopyR, height*0.85, 7), canopyMat);
       canopy.position.y = height*0.55;
+      canopy.castShadow = true;
+      canopy.receiveShadow = true;
       group.add(canopy);
       group.position.set(x,0,z);
       group.rotation.y = rand(0,6.28);
       scene.add(group);
-      trees.push({x,z,canopyR, mesh:group});
+      trees.push({x,z,canopyR, mesh:group, woodCharge: Math.floor(rand(2,5))});
     }
+  }
+})();
+
+// perimeter wall: a denser ring of trees right at the map edge so the boundary of the
+// world is never visible - fog + this wall together sell the illusion of an endless forest
+(function genBorderWall(){
+  function placeBorderTree(x,z){
+    if(dist(x,z,EXIT_POS.x,EXIT_POS.z) < 16) return; // keep the hidden exit findable, not buried
+    if(inRiver(x,z,4)) return; // don't block the river mouth at the edges
+    const canopyR = rand(1.8,3.0);
+    const height = rand(6,9);
+    const group = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.5,height*0.5,6), trunkMat);
+    trunk.position.y = height*0.25;
+    trunk.castShadow = true; trunk.receiveShadow = true;
+    group.add(trunk);
+    const canopy = new THREE.Mesh(new THREE.ConeGeometry(canopyR, height*0.85, 7), canopyMat);
+    canopy.position.y = height*0.55;
+    canopy.castShadow = true; canopy.receiveShadow = true;
+    group.add(canopy);
+    group.position.set(x + rand(-1.5,1.5), 0, z + rand(-1.5,1.5));
+    group.rotation.y = rand(0,6.28);
+    scene.add(group);
+    trees.push({x, z, canopyR, mesh:group, woodCharge:0}); // already "spent" - purely a visual wall
+  }
+  const SPACING = 6.5;
+  for(let x=-BOUND_X; x<=BOUND_X; x+=SPACING){
+    placeBorderTree(x, -BOUND_Z+2);
+    placeBorderTree(x, BOUND_Z-2);
+  }
+  for(let z=-BOUND_Z; z<=BOUND_Z; z+=SPACING){
+    placeBorderTree(-BOUND_X+2, z);
+    placeBorderTree(BOUND_X-2, z);
   }
 })();
 
@@ -517,9 +750,11 @@ function buildPerson(coatColor, skinColor){
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.6,2.2,1.0), new THREE.MeshStandardMaterial({color:coatColor, roughness:0.9}));
   body.position.y = 1.3;
+  body.castShadow = true;
   g.add(body);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.62,10,8), new THREE.MeshStandardMaterial({color:skinColor, roughness:0.8}));
   head.position.y = 2.75;
+  head.castShadow = true;
   g.add(head);
   return g;
 }
@@ -582,8 +817,85 @@ for(let i=0;i<3;i++){
   workbenchGroup.add(stick);
 }
 workbenchGroup.position.set(WORKBENCH_POS.x, 0, WORKBENCH_POS.z);
+workbenchGroup.traverse(o=>{ if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
 scene.add(workbenchGroup);
 const WORKBENCH_RADIUS = 6.5;
+
+// house: built once at the workbench, becomes a safe zone that slowly heals the player
+const HOUSE_COST_STICKS = 40, HOUSE_RADIUS = 7, HOUSE_HEAL_RATE = 4; // hp/sec while inside
+let houseBuilt = false;
+const houseWoodMat = new THREE.MeshStandardMaterial({ color:0x4a3420, roughness:0.95 });
+const houseRoofMat = new THREE.MeshStandardMaterial({ color:0x2c1f14, roughness:1 });
+const houseGroup = new THREE.Group();
+const houseWalls = new THREE.Mesh(new THREE.BoxGeometry(9,5,7), houseWoodMat);
+houseWalls.position.y = 2.5;
+houseWalls.castShadow = true;
+houseWalls.receiveShadow = true;
+houseGroup.add(houseWalls);
+const houseRoof = new THREE.Mesh(new THREE.ConeGeometry(7.2,3.4,4), houseRoofMat);
+houseRoof.rotation.y = Math.PI/4;
+houseRoof.position.y = 6.7;
+houseRoof.castShadow = true;
+houseGroup.add(houseRoof);
+const houseDoor = new THREE.Mesh(new THREE.BoxGeometry(0.3,3,1.6), new THREE.MeshStandardMaterial({color:0x1c130c, roughness:1}));
+houseDoor.position.set(-4.65, 1.5, 0);
+houseDoor.castShadow = true;
+const DOOR_POS = { x: HOUSE_POS.x - 4.65, z: HOUSE_POS.z };
+const DOOR_INTERACT_RADIUS = 2.2;
+let houseDoorOpen = false;
+function openHouseDoor(){
+  if(houseDoorOpen) return;
+  houseDoorOpen = true;
+  houseDoor.rotation.y = -Math.PI/2.1;
+  houseDoor.position.set(-4.65, 1.5, 0.8);
+  showToast("Дверь открыта.");
+}
+houseGroup.add(houseDoor);
+houseGroup.position.set(HOUSE_POS.x, 0, HOUSE_POS.z);
+houseGroup.visible = false;
+scene.add(houseGroup);
+const houseLight = new THREE.PointLight(0xffb060, 0, 20, 2);
+houseLight.position.set(HOUSE_POS.x, 3, HOUSE_POS.z);
+scene.add(houseLight);
+function craftHouse(){
+  if(houseBuilt || player.inventory.sticks < HOUSE_COST_STICKS) return;
+  player.inventory.sticks -= HOUSE_COST_STICKS;
+  houseBuilt = true;
+  houseGroup.visible = true;
+  houseLight.intensity = 1.8;
+  showToast("Дом построен — рядом с ним ты постепенно восстанавливаешь здоровье.");
+  refreshWorkbench();
+  refreshInventory();
+}
+
+// climbable rock: a boulder mound the player can walk up onto (smooth height ramp, no jump needed)
+const ROCK_HEIGHT = 5.2, ROCK_TOP_RADIUS = 5.5, ROCK_RAMP_WIDTH = 5.5;
+function rockElevation(x, z){
+  const d = dist(x, z, ROCK_POS.x, ROCK_POS.z);
+  if(d >= ROCK_TOP_RADIUS + ROCK_RAMP_WIDTH) return 0;
+  if(d <= ROCK_TOP_RADIUS) return ROCK_HEIGHT;
+  const t = 1 - (d - ROCK_TOP_RADIUS) / ROCK_RAMP_WIDTH;
+  const s = t*t*(3-2*t); // smoothstep
+  return ROCK_HEIGHT * s;
+}
+const rockMat = new THREE.MeshStandardMaterial({ color:0x4a4a48, roughness:1, flatShading:true });
+const rockGroup = new THREE.Group();
+function addBoulder(bx,bz,scale,by){
+  const b = new THREE.Mesh(new THREE.IcosahedronGeometry(scale,0), rockMat);
+  b.position.set(bx, by + scale*0.55, bz);
+  b.rotation.set(rand(0,6.28), rand(0,6.28), rand(0,6.28));
+  b.castShadow = true;
+  b.receiveShadow = true;
+  rockGroup.add(b);
+}
+addBoulder(0, 0, 5.6, 1.2);
+addBoulder(3.2, 2.4, 3.2, 0);
+addBoulder(-3.4, 1.6, 3.4, 0);
+addBoulder(1.2, -3.4, 3.0, 0);
+addBoulder(-2.2, -2.8, 2.7, 0);
+addBoulder(0.5, 4.2, 2.4, 0);
+rockGroup.position.set(ROCK_POS.x, 0, ROCK_POS.z);
+scene.add(rockGroup);
 
 // exit gate
 const gateGroup = new THREE.Group();
@@ -596,13 +908,14 @@ bar.rotation.z = Math.PI/2; bar.position.set(0,5.8,0);
 gateGroup.add(bar);
 gateGroup.position.set(EXIT_POS.x, 0, EXIT_POS.z);
 gateGroup.visible = false; // hidden until 2 hunter quests are done
+gateGroup.traverse(o=>{ if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
 scene.add(gateGroup);
 
 // ================= HERBS (healing pickups) =================
 let herbs = [];
 const herbMat = new THREE.MeshStandardMaterial({ color:0x3fae55, emissive:0x1e6b30, emissiveIntensity:0.7, roughness:0.7 });
 const HERB_HEAL = 25;
-const HERB_COUNT = 6;
+const HERB_COUNT = 22;
 const HERB_RESPAWN_DELAY = 40; // seconds
 function buildHerbMesh(){
   const g = new THREE.Group();
@@ -676,6 +989,17 @@ const stickMat = new THREE.MeshStandardMaterial({ color:0xa5691f, emissive:0x502
 function spawnFirewood(){
   for(const f of firewood) scene.remove(f.mesh);
   firewood = [];
+  const placed = [];
+  for(let i=0;i<3;i++){
+    const s = randomFreeSpot(1.5, placed);
+    placed.push(s);
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,2.4,6), stickMat);
+    mesh.rotation.z = Math.PI/2.1;
+    mesh.rotation.y = rand(0,6.28);
+    mesh.position.set(s.x, 0.3, s.z);
+    scene.add(mesh);
+    firewood.push({x:s.x, z:s.z, collected:false, mesh, baseY:0.3});
+  }
 }
 
 // ================= HOSTILES (wolves + bear) =================
@@ -684,14 +1008,16 @@ let nightWolves = [];  // temporary night-siege attackers
 let bear = null;       // day-7 threat
 
 const wolfBodyMat = new THREE.MeshStandardMaterial({ color:0x141414, roughness:0.9 });
-const wolfEyeMat = new THREE.MeshStandardMaterial({ color:0xff3030, emissive:0xff2020, emissiveIntensity:1.6 });
+const wolfEyeMat = new THREE.MeshStandardMaterial({ color:0xff0000, emissive:0xff0000, emissiveIntensity:2.5, toneMapped:false });
 function buildWolf(){
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.0,2.6), wolfBodyMat);
   body.position.y = 0.7;
+  body.castShadow = true;
   g.add(body);
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.8,1.0), wolfBodyMat);
   head.position.set(0,0.85,1.6);
+  head.castShadow = true;
   g.add(head);
   const eyeGeo = new THREE.SphereGeometry(0.08,6,6);
   const eyeL = new THREE.Mesh(eyeGeo, wolfEyeMat); eyeL.position.set(0.22,0.95,2.05); g.add(eyeL);
@@ -703,9 +1029,11 @@ function buildBear(){
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(2.4,1.9,4.4), bearBodyMat);
   body.position.y = 1.15;
+  body.castShadow = true;
   g.add(body);
   const head = new THREE.Mesh(new THREE.BoxGeometry(1.4,1.3,1.6), bearBodyMat);
   head.position.set(0,1.5,2.6);
+  head.castShadow = true;
   g.add(head);
   const eyeGeo = new THREE.SphereGeometry(0.12,6,6);
   const eyeL = new THREE.Mesh(eyeGeo, wolfEyeMat); eyeL.position.set(0.32,1.65,3.3); g.add(eyeL);
@@ -773,10 +1101,34 @@ function spawnBear(){
 const player = {
   x:PLAYER_START.x, z:PLAYER_START.z, r:1.3, hp:100, maxhp:100,
   speed:16, attackCd:0, rotY:Math.PI/2, // facing +X (toward hunter)
-  stamina:5, maxStamina:5, sprinting:false,
-  inventory: { herbs:0, wolfFangs:0, bearClaw:0, sticks:0, torches:0 },
-  weapon: 'fists'
+  sprinting:false,
+  hunger:100, maxHunger:100, thirst:100, maxThirst:100,
+  inventory: { herbs:0, wolfFangs:0, bearClaw:0, sticks:0, torches:0, stone:0, rawMeat:0, cookedMeat:0 },
+  weapon: 'fists',
+  groundY: 0
 };
+let climbedRockOnce = false;
+const HUNGER_DRAIN = 100/300; // empties over ~5 minutes
+const THIRST_DRAIN = 100/240; // empties over ~4 minutes
+const MEAT_HUNGER_RESTORE = 35;
+const DRINK_THIRST_RESTORE = 35;
+const DRINK_RANGE = 3;
+function drinkWater(){
+  if(!started || dialogueOpen || questMenuOpen || invOpen || workbenchOpen) return;
+  if(!inRiver(player.x, player.z, DRINK_RANGE)){ showToast("Нужно быть у реки, чтобы напиться."); return; }
+  if(player.thirst >= player.maxThirst){ showToast("Жажды нет."); return; }
+  player.thirst = clamp(player.thirst + DRINK_THIRST_RESTORE, 0, player.maxThirst);
+  showToast(`Напился: +${DRINK_THIRST_RESTORE} жажды`);
+}
+let corpses = [];
+const SPRINT_DURATION = 2, SPRINT_SPEED_MULT = 1.8, SPRINT_COOLDOWN = 5;
+let sprintTimeLeft = 0, sprintCooldown = 0;
+function trySprint(){
+  if(!started || dialogueOpen || questMenuOpen || invOpen || workbenchOpen) return;
+  if(sprintCooldown > 0) return;
+  sprintTimeLeft = SPRINT_DURATION;
+  sprintCooldown = SPRINT_COOLDOWN;
+}
 let trust = 0;
 let stage = 'intro';
 let dialogueOpen = false;
@@ -899,6 +1251,7 @@ function refreshInventory(){
   document.getElementById('invFangCount').textContent = `(${player.inventory.wolfFangs})`;
   document.getElementById('invClawCount').textContent = `(${player.inventory.bearClaw}/1)`;
   document.getElementById('invSticksCount').textContent = `(${player.inventory.sticks})`;
+  document.getElementById('invStoneCount').textContent = `(${player.inventory.stone})`;
   document.getElementById('invWeaponName').textContent = WEAPON_STATS[player.weapon].label;
   const woodN = (typeof firewood !== 'undefined') ? firewood.filter(f=>f.collected).length : 0;
   document.getElementById('invWoodCount').textContent =
@@ -918,6 +1271,15 @@ function refreshInventory(){
     torchBtn.disabled = player.inventory.torches <= 0;
   }
   torchBtn.style.opacity = torchBtn.disabled ? '0.4' : '1';
+
+  document.getElementById('invRawMeatCount').textContent = `(${player.inventory.rawMeat})`;
+  document.getElementById('invCookedMeatCount').textContent = `(${player.inventory.cookedMeat})`;
+  const eatRawBtn = document.getElementById('invEatRawBtn');
+  eatRawBtn.disabled = player.inventory.rawMeat <= 0;
+  eatRawBtn.style.opacity = eatRawBtn.disabled ? '0.4' : '1';
+  const eatBtn = document.getElementById('invEatMeatBtn');
+  eatBtn.disabled = player.inventory.cookedMeat <= 0 || (player.hp >= player.maxhp && player.hunger >= player.maxHunger);
+  eatBtn.style.opacity = eatBtn.disabled ? '0.4' : '1';
 }
 function useHerb(){
   if(player.inventory.herbs <= 0) return;
@@ -933,7 +1295,10 @@ let workbenchOpen = false;
 const WEAPON_STATS = {
   fists: { dmg:15, cooldown:0.35, label:'Кулаки' },
   knife: { dmg:22, cooldown:0.22, label:'Нож' },
-  axe:   { dmg:34, cooldown:0.5,  label:'Топор' }
+  axe:   { dmg:34, cooldown:0.5,  label:'Топор' },
+  pickaxe: { dmg:28, cooldown:0.4, label:'Кирка' },
+  stoneKnife: { dmg:22, cooldown:0.22, label:'Каменный нож' },
+  stoneAxe:   { dmg:34, cooldown:0.5,  label:'Каменный топор' }
 };
 function toggleWorkbench(){
   workbenchOpen = !workbenchOpen;
@@ -943,12 +1308,6 @@ function toggleWorkbench(){
 function closeWorkbench(){
   workbenchOpen = false;
   document.getElementById('workbenchMenu').classList.remove('show');
-}
-function craftSticks(){
-  player.inventory.sticks += 20;
-  showToast("Сделано 20 палок.");
-  refreshWorkbench();
-  refreshInventory();
 }
 function craftKnife(){
   if(player.inventory.sticks < 10 || player.inventory.wolfFangs < 1) return;
@@ -965,6 +1324,41 @@ function craftAxe(){
   player.inventory.wolfFangs -= 3;
   player.weapon = 'axe';
   showToast("Скрафтен топор: медленнее, но куда сильнее.");
+  refreshWorkbench();
+  refreshInventory();
+}
+function craftStoneKnife(){
+  if(player.inventory.sticks < 10 || player.inventory.stone < 1) return;
+  player.inventory.sticks -= 10;
+  player.inventory.stone -= 1;
+  player.weapon = 'stoneKnife';
+  showToast("Скрафтен каменный нож: быстрее бьёт, но слабее топора.");
+  refreshWorkbench();
+  refreshInventory();
+}
+function craftStoneAxe(){
+  if(player.inventory.sticks < 20 || player.inventory.stone < 3) return;
+  player.inventory.sticks -= 20;
+  player.inventory.stone -= 3;
+  player.weapon = 'stoneAxe';
+  showToast("Скрафтен каменный топор: медленнее, но куда сильнее.");
+  refreshWorkbench();
+  refreshInventory();
+}
+const PICKAXE_STICKS_COST = 2, PICKAXE_FANGS_COST = 3;
+function craftPickaxe(){
+  if(player.inventory.sticks < PICKAXE_STICKS_COST || player.inventory.wolfFangs < PICKAXE_FANGS_COST) return;
+  player.inventory.sticks -= PICKAXE_STICKS_COST;
+  player.inventory.wolfFangs -= PICKAXE_FANGS_COST;
+  player.weapon = 'pickaxe';
+  showToast("Скрафтена кирка: неплохой урон и средняя скорость.");
+  refreshWorkbench();
+  refreshInventory();
+}
+function mineStone(){
+  player.inventory.stone++;
+  showToast(`Добыт камень (${player.inventory.stone})`);
+  spawnDebris(ROCK_POS.x + rand(-2,2), 1.2, ROCK_POS.z + rand(-2,2), rockChipMat, 6);
   refreshWorkbench();
   refreshInventory();
 }
@@ -989,9 +1383,30 @@ function useTorch(){
   showToast("Факел зажжён — светит ярче на всю ночь.");
   refreshInventory();
 }
+const FIREWOOD_CRAFT_STICKS = 3, FIREWOOD_CRAFT_HERBS = 2;
+function craftFirewoodItem(){
+  if(stage !== 'firewood') return;
+  if(player.inventory.sticks < FIREWOOD_CRAFT_STICKS || player.inventory.herbs < FIREWOOD_CRAFT_HERBS) return;
+  const target = firewood.find(f => !f.collected);
+  if(!target) return;
+  player.inventory.sticks -= FIREWOOD_CRAFT_STICKS;
+  player.inventory.herbs -= FIREWOOD_CRAFT_HERBS;
+  target.collected = true;
+  scene.remove(target.mesh);
+  const n = firewood.filter(f=>f.collected).length;
+  updateQuestBanner(`Найди хворост для костра (${n}/3)`);
+  if(n >= 3){
+    stage = 'firewood_waiting';
+    updateQuestBanner("Вернись к охотнику с хворостом");
+  }
+  showToast("Смастерил вязанку хвороста из палок и трав.");
+  refreshWorkbench();
+  refreshInventory();
+}
 function refreshWorkbench(){
   document.getElementById('wbSticks').textContent = player.inventory.sticks;
   document.getElementById('wbFangs').textContent = player.inventory.wolfFangs;
+  document.getElementById('wbStone').textContent = player.inventory.stone;
   document.getElementById('wbWeapon').textContent = WEAPON_STATS[player.weapon].label;
 
   const knifeBtn = document.getElementById('wbKnifeBtn');
@@ -1004,10 +1419,44 @@ function refreshWorkbench(){
   axeBtn.disabled = !axeReady || player.weapon === 'axe';
   axeBtn.style.opacity = axeBtn.disabled ? '0.4' : '1';
 
+  const stoneKnifeBtn = document.getElementById('wbStoneKnifeBtn');
+  const stoneKnifeReady = player.inventory.sticks >= 10 && player.inventory.stone >= 1;
+  stoneKnifeBtn.disabled = !stoneKnifeReady || player.weapon === 'stoneKnife';
+  stoneKnifeBtn.style.opacity = stoneKnifeBtn.disabled ? '0.4' : '1';
+
+  const stoneAxeBtn = document.getElementById('wbStoneAxeBtn');
+  const stoneAxeReady = player.inventory.sticks >= 20 && player.inventory.stone >= 3;
+  stoneAxeBtn.disabled = !stoneAxeReady || player.weapon === 'stoneAxe';
+  stoneAxeBtn.style.opacity = stoneAxeBtn.disabled ? '0.4' : '1';
+
+  const pickaxeBtn = document.getElementById('wbPickaxeBtn');
+  const pickaxeReady = player.inventory.sticks >= PICKAXE_STICKS_COST && player.inventory.wolfFangs >= PICKAXE_FANGS_COST;
+  pickaxeBtn.disabled = !pickaxeReady || player.weapon === 'pickaxe';
+  pickaxeBtn.style.opacity = pickaxeBtn.disabled ? '0.4' : '1';
+
   const torchBtn = document.getElementById('wbTorchBtn');
   const torchReady = player.inventory.sticks >= TORCH_STICKS_COST && player.inventory.herbs >= TORCH_HERBS_COST;
   torchBtn.disabled = !torchReady;
   torchBtn.style.opacity = torchBtn.disabled ? '0.4' : '1';
+
+  const firewoodBtn = document.getElementById('wbFirewoodBtn');
+  const firewoodDesc = document.getElementById('wbFirewoodDesc');
+  const hasUncollected = (typeof firewood !== 'undefined') && firewood.some(f=>!f.collected);
+  const firewoodReady = stage === 'firewood' && hasUncollected &&
+    player.inventory.sticks >= FIREWOOD_CRAFT_STICKS && player.inventory.herbs >= FIREWOOD_CRAFT_HERBS;
+  firewoodBtn.disabled = !firewoodReady;
+  firewoodBtn.style.opacity = firewoodBtn.disabled ? '0.4' : '1';
+  firewoodDesc.textContent = stage === 'firewood'
+    ? "3 палки + 2 травы. Заменяет одну найденную вязанку."
+    : "Доступно только пока охотник ждёт хворост.";
+
+  const houseBtn = document.getElementById('wbHouseBtn');
+  const houseDesc = document.getElementById('wbHouseDesc');
+  houseBtn.disabled = houseBuilt || player.inventory.sticks < HOUSE_COST_STICKS;
+  houseBtn.style.opacity = houseBtn.disabled ? '0.4' : '1';
+  houseDesc.textContent = houseBuilt
+    ? (houseDoorOpen ? "Построен, дверь открыта." : "Построен — подойди к двери вплотную и открой (E).")
+    : "40 палок. Строится вокруг охотника, с дверью.";
 }
 
 const STAGES_AFTER_FIREWOOD = ['wolves','wolves_waiting','escort','escort_waiting','final_pending','done'];
@@ -1095,8 +1544,21 @@ window.addEventListener('keydown', e=>{
   if(k==='i' && started && !dialogueOpen && !questMenuOpen && !workbenchOpen) toggleInventory();
   if(k==='r' && started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen) useHerb();
   if(k==='t' && started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen) useTorch();
+  if(k==='f' && started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen) eatMeat();
+  if(k==='g') drinkWater();
+  if(k==='shift' && !e.repeat) trySprint();
 });
 window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+window.addEventListener('blur', ()=>{
+  for(const k in keys) keys[k] = false;
+  rmbDown = false;
+});
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    for(const k in keys) keys[k] = false;
+    rmbDown = false;
+  }
+});
 
 function startGame(){
   document.getElementById('startOverlay').classList.remove('show');
@@ -1109,7 +1571,12 @@ function startGame(){
 // right mouse button drag turns the player, same as A/D
 let rmbDown = false;
 renderer.domElement.addEventListener('contextmenu', e=> e.preventDefault());
-renderer.domElement.addEventListener('mousedown', e=>{ if(e.button===2) rmbDown = true; });
+renderer.domElement.addEventListener('mousedown', e=>{
+  if(e.button===2) rmbDown = true;
+  if(e.button===0 && started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen && player.attackCd<=0){
+    performAttackAction();
+  }
+});
 window.addEventListener('mouseup', e=>{ if(e.button===2) rmbDown = false; });
 window.addEventListener('mousemove', e=>{
   if(rmbDown && started && !dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen){
@@ -1118,6 +1585,85 @@ window.addEventListener('mousemove', e=>{
 });
 
 // ================= COMBAT =================
+const CHOP_RANGE = 4.5;
+function tryChopTree(){
+  let nearest = null, nd = 999;
+  for(const t of trees){
+    if(t.woodCharge <= 0) continue;
+    const d = dist(player.x,player.z,t.x,t.z);
+    if(d < CHOP_RANGE && d < nd){ nd = d; nearest = t; }
+  }
+  if(!nearest) return false;
+  nearest.woodCharge--;
+  const gained = 2;
+  player.inventory.sticks += gained;
+  spawnDebris(nearest.x, 1.5, nearest.z, woodChipMat, 5);
+  showToast(nearest.woodCharge > 0 ? `Срублена ветка (+${gained} палки)` : `Дерево срублено начисто (+${gained} палки)`);
+  refreshInventory();
+  refreshWorkbench();
+  return true;
+}
+const BUTCHER_RANGE = 3.5;
+function tryCookMeat(){
+  if(!fireLit){ showToast("Костёр не горит — готовить не на чем."); return; }
+  if(player.inventory.rawMeat <= 0){ showToast("Нет сырого мяса для готовки."); return; }
+  player.inventory.rawMeat--;
+  player.inventory.cookedMeat++;
+  showToast(`Мясо приготовлено (${player.inventory.cookedMeat})`);
+  refreshInventory();
+}
+const MEAT_HEAL = 40;
+function eatMeat(){
+  if(player.inventory.cookedMeat <= 0) return;
+  if(player.hp >= player.maxhp && player.hunger >= player.maxHunger){ showToast("Есть не хочется."); return; }
+  player.inventory.cookedMeat--;
+  player.hp = clamp(player.hp + MEAT_HEAL, 0, player.maxhp);
+  player.hunger = clamp(player.hunger + MEAT_HUNGER_RESTORE, 0, player.maxHunger);
+  showToast(`Мясо съедено: +${MEAT_HEAL} здоровья, +${MEAT_HUNGER_RESTORE} голода`);
+  refreshInventory();
+}
+const RAW_MEAT_HUNGER_RESTORE = 20;
+const POISON_DURATION = 12, POISON_DPS = 2;
+let poisoned = false, poisonTimeLeft = 0;
+function eatRawMeat(){
+  if(player.inventory.rawMeat <= 0) return;
+  player.inventory.rawMeat--;
+  player.hunger = clamp(player.hunger + RAW_MEAT_HUNGER_RESTORE, 0, player.maxHunger);
+  poisoned = true;
+  poisonTimeLeft = POISON_DURATION;
+  showToast("Сырое мясо... тебя мутит. Отравление!");
+  refreshInventory();
+}
+function tryButcherCorpse(){
+  let nearest = null, nd = 999;
+  for(const c of corpses){
+    if(!c.hasMeat) continue;
+    const d = dist(player.x,player.z,c.x,c.z);
+    if(d < BUTCHER_RANGE && d < nd){ nd = d; nearest = c; }
+  }
+  if(!nearest) return false;
+  nearest.hasMeat = false;
+  player.inventory.rawMeat += nearest.meatYield;
+  showToast(`Разделал тушу: +${nearest.meatYield} сырого мяса`);
+  refreshInventory();
+  return true;
+}
+function performAttackAction(){
+  const nearRock = dist(player.x,player.z,ROCK_POS.x,ROCK_POS.z) <= ROCK_TOP_RADIUS + 4;
+  const isAxeType = (player.weapon === 'axe' || player.weapon === 'stoneAxe');
+  const isKnifeType = (player.weapon === 'knife' || player.weapon === 'stoneKnife');
+  const hostileInRange = allHostiles().some(w => dist(player.x,player.z,w.x,w.z) < 4.4);
+  if(nearRock && player.weapon === 'pickaxe'){
+    mineStone();
+  } else if(isAxeType && !hostileInRange && tryChopTree()){
+    // handled inside tryChopTree
+  } else if(isKnifeType && !hostileInRange && tryButcherCorpse()){
+    // handled inside tryButcherCorpse
+  } else {
+    doAttack();
+  }
+  player.attackCd = WEAPON_STATS[player.weapon].cooldown;
+}
 function allHostiles(){
   const list = [...wolves, ...nightWolves];
   if(bear && bear.alive) list.push(bear);
@@ -1135,8 +1681,17 @@ function doAttack(){
     flashWolf(nearest);
     if(nearest.hp <= 0){
       nearest.alive = false;
-      scene.remove(nearest.mesh);
       nearest.hpEl.style.display = 'none';
+
+      // corpse stays on the ground - butcher it with a knife for raw meat
+      nearest.mesh.rotation.x = (Math.random() < 0.5 ? 1 : -1) * Math.PI/2;
+      nearest.mesh.rotation.z += rand(-0.3,0.3);
+      nearest.mesh.position.y = 0.35;
+      corpses.push({
+        x: nearest.x, z: nearest.z, mesh: nearest.mesh,
+        kind: nearest.kind, meatYield: nearest.kind === 'bear' ? 5 : 2, hasMeat: true
+      });
+
       if(nearest.kind === 'wolf'){
         player.inventory.wolfFangs++;
       }
@@ -1226,6 +1781,58 @@ function updateWolves(dt){ updateHostileGroup(wolves, dt); }
 // ================= UPDATE =================
 function collidesTreesPlayer(x,z,r){ return collidesTrees(x,z,r); }
 
+// ================= DEBRIS PHYSICS (rock chips / wood chips) =================
+let debris = [];
+const rockChipMat = new THREE.MeshStandardMaterial({ color:0x6a6a66, roughness:1, flatShading:true });
+const woodChipMat = new THREE.MeshStandardMaterial({ color:0x6b4a28, roughness:0.9, flatShading:true });
+const GRAVITY = 18;
+function spawnDebris(x, y, z, mat, count){
+  for(let i=0;i<count;i++){
+    const size = rand(0.12,0.28);
+    const mesh = new THREE.Mesh(new THREE.TetrahedronGeometry(size,0), mat);
+    mesh.position.set(x + rand(-0.3,0.3), y + rand(0.2,0.6), z + rand(-0.3,0.3));
+    mesh.rotation.set(rand(0,6.28), rand(0,6.28), rand(0,6.28));
+    mesh.castShadow = true;
+    scene.add(mesh);
+    const angle = rand(0,6.28);
+    const outSpeed = rand(2.5,5.5);
+    debris.push({
+      mesh,
+      vx: Math.cos(angle)*outSpeed,
+      vy: rand(3.5,6.5),
+      vz: Math.sin(angle)*outSpeed,
+      spin: { x:rand(-6,6), y:rand(-6,6), z:rand(-6,6) },
+      life: 1.4,
+      settled: false
+    });
+  }
+}
+function updateDebris(dt){
+  for(let i=debris.length-1;i>=0;i--){
+    const d = debris[i];
+    if(!d.settled){
+      d.vy -= GRAVITY*dt;
+      d.mesh.position.x += d.vx*dt;
+      d.mesh.position.y += d.vy*dt;
+      d.mesh.position.z += d.vz*dt;
+      d.mesh.rotation.x += d.spin.x*dt;
+      d.mesh.rotation.y += d.spin.y*dt;
+      d.mesh.rotation.z += d.spin.z*dt;
+      if(d.mesh.position.y <= 0.1){
+        d.mesh.position.y = 0.1;
+        d.vx *= 0.4; d.vz *= 0.4; d.vy = 0;
+        d.settled = true;
+      }
+    }
+    d.life -= dt;
+    if(d.life <= 0){
+      scene.remove(d.mesh);
+      debris.splice(i,1);
+    }
+  }
+}
+
+
 function update(dt){
   time += dt;
   if(started){
@@ -1252,6 +1859,25 @@ function update(dt){
     ambient.intensity = lerp(DAY_AMBIENT, NIGHT_AMBIENT, nightFactor);
     hemi.intensity = lerp(DAY_HEMI, NIGHT_HEMI, nightFactor);
     scene.fog.density = lerp(DAY_FOG, NIGHT_FOG, nightFactor);
+
+    tmpSkyColor.copy(DAY_SKY_COLOR).lerp(NIGHT_SKY_COLOR, nightFactor);
+    skyDome.material.color.copy(tmpSkyColor);
+    scene.background.copy(tmpSkyColor);
+    scene.fog.color.copy(tmpSkyColor);
+    sunSprite.material.opacity = clamp(1 - nightFactor*1.3, 0, 1);
+    moonSprite.material.opacity = clamp(nightFactor*1.3, 0, 1);
+    skyDome.position.set(player.x, 0, player.z);
+    sunSprite.position.set(player.x + 190, 160, player.z - 70);
+    moonSprite.position.set(player.x - 170, 150, player.z + 90);
+
+    tmpSunColor.copy(SUN_COLOR).lerp(MOON_COLOR, nightFactor);
+    sunMoonLight.color.copy(tmpSunColor);
+    sunMoonLight.intensity = lerp(1.7, 0.35, nightFactor);
+    const lightDirX = lerp(1, -1, nightFactor); // swap side so shadows read as sun by day, moon by night
+    sunMoonLight.position.set(player.x + lightDirX*120, 130, player.z - 60);
+    sunMoonLight.target.position.set(player.x, 0, player.z);
+
+    fireflyMat.opacity = clamp(nightFactor*1.6, 0, 0.9);
   }
   const flick = Math.sin(time*8)*0.4 + Math.sin(time*3.1)*0.3;
   if(torchActive && started){
@@ -1266,6 +1892,8 @@ function update(dt){
   lantern.distance = torchActive ? 42 : 26;
   fireLight.intensity = fireLit ? (2.6 + Math.sin(time*9)*0.4 + Math.sin(time*3.7)*0.3) : 0;
   if(window.__riverWaterMat) window.__riverWaterMat.emissiveIntensity = 0.4 + Math.sin(time*1.4)*0.15;
+  updateFireflies(dt);
+  updateDebris(dt);
   if(invOpen && torchActive) refreshInventory();
 
   eDown = !!keys['e'];
@@ -1273,8 +1901,25 @@ function update(dt){
   if(eDown && !eWasDown){
     if(dialogueOpen) advanceDialogue();
     else if(workbenchOpen) closeWorkbench();
-    else if(dist(player.x,player.z,WORKBENCH_POS.x,WORKBENCH_POS.z) <= WORKBENCH_RADIUS) toggleWorkbench();
-    else tryInteractHunter();
+    else {
+      const dWorkbench = dist(player.x,player.z,WORKBENCH_POS.x,WORKBENCH_POS.z);
+      const dCampfire = dist(player.x,player.z,CAMPFIRE_POS.x,CAMPFIRE_POS.z);
+      const dDoor = dist(player.x,player.z,DOOR_POS.x,DOOR_POS.z);
+      const dHunter = dist(player.x,player.z,HUNTER_POS.x,HUNTER_POS.z);
+      const candidates = [];
+      if(dWorkbench <= WORKBENCH_RADIUS) candidates.push({d:dWorkbench, fn:toggleWorkbench});
+      if(dCampfire <= 6) candidates.push({d:dCampfire, fn:tryCookMeat});
+      if(houseBuilt && !houseDoorOpen && dDoor <= DOOR_INTERACT_RADIUS) candidates.push({d:dDoor, fn:openHouseDoor});
+      if(houseBuilt && !houseDoorOpen && dHunter <= 6.5){
+        candidates.push({d:dHunter, fn:()=>showToast("Дверь заперта — подойди к ней вплотную и открой.")});
+      } else if((!houseBuilt || houseDoorOpen) && dHunter <= 6.5){
+        candidates.push({d:dHunter, fn:tryInteractHunter});
+      }
+      if(candidates.length){
+        candidates.sort((a,b)=>a.d-b.d);
+        candidates[0].fn();
+      }
+    }
   }
   eWasDown = eDown;
 
@@ -1285,16 +1930,19 @@ function update(dt){
     if(keys['w']||keys['arrowup']) move += 1;
     if(keys['s']||keys['arrowdown']) move -= 1;
     const isMoving = (move !== 0);
-    const wantsSprint = !!keys['shift'];
 
-    if(wantsSprint && isMoving && player.stamina > 0){
+    if(sprintCooldown > 0) sprintCooldown -= dt;
+    if(sprintTimeLeft > 0){
+      sprintTimeLeft -= dt;
       player.sprinting = true;
-      player.stamina = clamp(player.stamina - dt, 0, player.maxStamina);
     } else {
       player.sprinting = false;
-      player.stamina = clamp(player.stamina + dt*0.6, 0, player.maxStamina);
     }
-    let curSpeed = player.speed * (player.sprinting ? 1.8 : 1);
+    const staminaFillEl = document.getElementById('staminaFill');
+    staminaFillEl.style.width = (clamp(1 - sprintCooldown/SPRINT_COOLDOWN, 0, 1) * 100) + '%';
+    staminaFillEl.style.opacity = sprintCooldown > 0 ? '0.5' : '1';
+
+    let curSpeed = player.speed * (player.sprinting ? SPRINT_SPEED_MULT : 1);
     const inDeepWater = inRiver(player.x, player.z, 0);
     if(inDeepWater){
       curSpeed *= 0.55; // wading through water, no bridge nearby
@@ -1321,6 +1969,35 @@ function update(dt){
       const nz = player.z + fz*move*curSpeed*dt;
       if(!collidesTreesPlayer(nx, player.z, player.r)) player.x = clamp(nx, -BOUND_X+1, BOUND_X-1);
       if(!collidesTreesPlayer(player.x, nz, player.r)) player.z = clamp(nz, -BOUND_Z+1, BOUND_Z-1);
+    }
+
+    player.groundY = rockElevation(player.x, player.z);
+    if(player.groundY > ROCK_HEIGHT*0.8 && !climbedRockOnce){
+      climbedRockOnce = true;
+      showToast("Забрался на камень — отсюда видно дальше.");
+    }
+
+    if(houseBuilt && dist(player.x,player.z,HOUSE_POS.x,HOUSE_POS.z) < HOUSE_RADIUS && player.hp < player.maxhp){
+      player.hp = clamp(player.hp + HOUSE_HEAL_RATE*dt, 0, player.maxhp);
+    }
+
+    player.hunger = clamp(player.hunger - HUNGER_DRAIN*dt, 0, player.maxHunger);
+    player.thirst = clamp(player.thirst - THIRST_DRAIN*dt, 0, player.maxThirst);
+    if(player.hunger <= 0){ doLose('starvation'); }
+    else if(player.thirst <= 0){ doLose('dehydration'); }
+
+    const poisonWarnEl = document.getElementById('poisonWarning');
+    if(poisoned){
+      poisonTimeLeft -= dt;
+      player.hp = clamp(player.hp - POISON_DPS*dt, 0, player.maxhp);
+      poisonWarnEl.classList.add('show');
+      if(player.hp <= 0){ doLose('poison'); }
+      if(poisonTimeLeft <= 0){
+        poisoned = false;
+        showToast("Отравление прошло.");
+      }
+    } else {
+      poisonWarnEl.classList.remove('show');
     }
 
     // herb pickup (always available, heals on contact)
@@ -1354,7 +2031,9 @@ function update(dt){
     if(bear && bear.alive) updateHostileGroup([bear], dt);
 
     if(player.attackCd > 0) player.attackCd -= dt;
-    if(spaceDown && !spaceWasDown && player.attackCd <= 0){ doAttack(); player.attackCd = WEAPON_STATS[player.weapon].cooldown; }
+    if(spaceDown && !spaceWasDown && player.attackCd <= 0){
+      performAttackAction();
+    }
     spaceWasDown = spaceDown;
 
     if(stage === 'escort' || stage === 'done'){
@@ -1398,9 +2077,9 @@ function updateHunterHint(){
 }
 
 function syncMeshes(){
-  playerMesh.position.set(player.x,0,player.z);
+  playerMesh.position.set(player.x,player.groundY,player.z);
   playerMesh.rotation.y = player.rotY;
-  lantern.position.set(player.x, 2.6, player.z);
+  lantern.position.set(player.x, 2.6 + player.groundY, player.z);
   for(const w of allHostiles()){
     w.mesh.position.set(w.x,0,w.z);
     w.mesh.rotation.y = w.rotY;
@@ -1425,14 +2104,13 @@ function updateWolfHpBars(){
 
 function updateHpBar(){
   document.getElementById('hpFill').style.width = (player.hp/player.maxhp*100)+'%';
-  const staminaFill = document.getElementById('staminaFill');
-  staminaFill.style.width = (player.stamina/player.maxStamina*100)+'%';
-  staminaFill.style.opacity = player.stamina<=0 ? '0.4' : '1';
+  document.getElementById('hungerFill').style.width = (player.hunger/player.maxHunger*100)+'%';
+  document.getElementById('thirstFill').style.width = (player.thirst/player.maxThirst*100)+'%';
 }
 
 // camera: first-person, at the player's eye level, looking in the facing direction
 function updateCamera(dt){
-  const eyeHeight = 2.5;
+  const eyeHeight = 2.5 + player.groundY;
   const fx = Math.sin(player.rotY), fz = Math.cos(player.rotY);
   camera.position.set(player.x, eyeHeight, player.z);
   camera.lookAt(player.x + fx*10, eyeHeight, player.z + fz*10);
@@ -1450,6 +2128,15 @@ function doLose(reason){
   if(reason === 'drowning'){
     document.getElementById('loseTitle').textContent = "Река забрала тебя";
     document.getElementById('loseText').textContent = "Лёгкие наполнились водой раньше, чем ты успел выбраться на берег.";
+  } else if(reason === 'starvation'){
+    document.getElementById('loseTitle').textContent = "Голод победил";
+    document.getElementById('loseText').textContent = "Силы кончились раньше, чем ты успел найти еду.";
+  } else if(reason === 'dehydration'){
+    document.getElementById('loseTitle').textContent = "Жажда одолела";
+    document.getElementById('loseText').textContent = "Ты не успел добраться до воды вовремя.";
+  } else if(reason === 'poison'){
+    document.getElementById('loseTitle').textContent = "Отравление";
+    document.getElementById('loseText').textContent = "Сырое мясо оказалось последней трапезой.";
   } else {
     document.getElementById('loseTitle').textContent = "Лес забрал тебя";
     document.getElementById('loseText').textContent = "Тьма сомкнулась быстрее, чем ты успел выйти к свету.";
