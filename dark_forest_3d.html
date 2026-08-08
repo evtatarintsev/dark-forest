@@ -200,232 +200,232 @@
 <body>
 <div id="wrap">
   <div id="stage">
-    <div id="loading">ЗАГРУЗКА ЛЕСА...</div>
+    <div id="loading" data-i18n="loading">ЗАГРУЗКА ЛЕСА...</div>
     <div id="vignette"></div>
     <div class="hud">
       <div class="bar-wrap">
-        <div class="bar-label" style="font-size:12px; color:var(--ember); opacity:1; letter-spacing:2px; margin-bottom:8px;">ДЕНЬ <span id="dayNum">1</span> <span id="nightTag" style="color:#c94444; display:none;">• НОЧЬ</span></div>
-        <div class="bar-label">Жизнь</div>
+        <div class="bar-label" style="font-size:12px; color:var(--ember); opacity:1; letter-spacing:2px; margin-bottom:8px;"><span data-i18n="hud_day">ДЕНЬ</span> <span id="dayNum">1</span> <span id="nightTag" data-i18n="hud_night" style="color:#c94444; display:none;">• НОЧЬ</span></div>
+        <div class="bar-label" data-i18n="hud_hp">Жизнь</div>
         <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
-        <div class="bar-label" style="margin-top:8px;">Спринт</div>
+        <div class="bar-label" data-i18n="hud_stamina" style="margin-top:8px;">Спринт</div>
         <div class="hp-bar" id="staminaBar"><div class="hp-fill" id="staminaFill" style="width:100%; background:linear-gradient(90deg, #6b7c4a, #9fb86a);"></div></div>
-        <div class="bar-label" style="margin-top:8px;">Голод</div>
+        <div class="bar-label" data-i18n="hud_hunger" style="margin-top:8px;">Голод</div>
         <div class="hp-bar" id="hungerBar"><div class="hp-fill" id="hungerFill" style="width:100%; background:linear-gradient(90deg, #a5691f, #e0a545);"></div></div>
-        <div class="bar-label" style="margin-top:8px;">Жажда</div>
+        <div class="bar-label" data-i18n="hud_thirst" style="margin-top:8px;">Жажда</div>
         <div class="hp-bar" id="thirstBar"><div class="hp-fill" id="thirstFill" style="width:100%; background:linear-gradient(90deg, #185fa5, #5aa8e8);"></div></div>
       </div>
       <div class="trust-wrap">
-        <div class="bar-label">Доверие охотника</div>
+        <div class="bar-label" data-i18n="hud_trust">Доверие охотника</div>
         <div class="trust-pips" id="trustPips">
           <div class="pip" data-i="0"></div>
           <div class="pip" data-i="1"></div>
           <div class="pip" data-i="2"></div>
         </div>
       </div>
-      <div class="quest-banner" id="questBanner">Очнись...</div>
-      <div class="hint">W/S — вперёд/назад &nbsp;•&nbsp; A/D или ПКМ+мышь — поворот &nbsp;•&nbsp; SHIFT — спринт &nbsp;•&nbsp; E — говорить / верстак / готовить &nbsp;•&nbsp; ЛКМ / ПРОБЕЛ — атаковать / рубить / копать / разделывать &nbsp;•&nbsp; I — инвентарь &nbsp;•&nbsp; R — травы &nbsp;•&nbsp; T — факел &nbsp;•&nbsp; F — есть мясо &nbsp;•&nbsp; G — пить у реки</div>
+      <div class="quest-banner" id="questBanner" data-i18n="banner_wake">Очнись...</div>
+      <div class="hint" data-i18n="hint_text">W/S — вперёд/назад &nbsp;•&nbsp; A/D — шаг вбок &nbsp;•&nbsp; ПКМ+мышь или ← → — поворот &nbsp;•&nbsp; SHIFT — спринт &nbsp;•&nbsp; E — говорить / верстак / готовить &nbsp;•&nbsp; ЛКМ / ПРОБЕЛ — атаковать / рубить / копать / разделывать &nbsp;•&nbsp; I — инвентарь &nbsp;•&nbsp; R — травы &nbsp;•&nbsp; T — факел &nbsp;•&nbsp; F — есть мясо &nbsp;•&nbsp; G — пить у реки</div>
 
       <div class="quest-menu" id="questMenu" onclick="if(event.target===this) closeQuestMenu()">
         <div class="quest-menu-box">
-          <div class="quest-menu-title">Задания</div>
+          <div class="quest-menu-title" data-i18n="qm_title">Задания</div>
           <div class="quest-item" id="qItem1">
             <div class="quest-item-dot" id="qDot1"></div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Хворост для костра</div>
-              <div class="quest-item-desc" id="qDesc1">Охотник ещё не рассказал об этом.</div>
+              <div class="quest-item-name" data-i18n="q1_name">Хворост для костра</div>
+              <div class="quest-item-desc" id="qDesc1" data-i18n="q1_locked">Охотник ещё не рассказал об этом.</div>
             </div>
           </div>
           <div class="quest-item" id="qItem2">
             <div class="quest-item-dot" id="qDot2"></div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Отгони волков</div>
-              <div class="quest-item-desc" id="qDesc2">Задание пока не выдано.</div>
+              <div class="quest-item-name" data-i18n="q2_name">Отгони волков</div>
+              <div class="quest-item-desc" id="qDesc2" data-i18n="q_locked_generic">Задание пока не выдано.</div>
             </div>
           </div>
           <div class="quest-item" id="qItem3">
             <div class="quest-item-dot" id="qDot3"></div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Найди тропу из леса</div>
-              <div class="quest-item-desc" id="qDesc3">Задание пока не выдано.</div>
+              <div class="quest-item-name" data-i18n="q3_name">Найди тропу из леса</div>
+              <div class="quest-item-desc" id="qDesc3" data-i18n="q_locked_generic">Задание пока не выдано.</div>
             </div>
           </div>
-          <div class="quest-menu-hint">[ E или клик в стороне — закрыть ]</div>
+          <div class="quest-menu-hint" data-i18n="qm_hint">[ E или клик в стороне — закрыть ]</div>
         </div>
       </div>
 
       <div class="quest-menu" id="invMenu" onclick="if(event.target===this) closeInventory()">
         <div class="quest-menu-box">
-          <div class="quest-menu-title">Инвентарь</div>
+          <div class="quest-menu-title" data-i18n="inv_title">Инвентарь</div>
           <div class="quest-item">
             <div class="inv-icon">🌿</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Лечебные травы <span id="invHerbCount">(0)</span></div>
-              <div class="quest-item-desc">Лечат на 25 здоровья. Использовать — клавиша R.</div>
+              <div class="quest-item-name"><span data-i18n="inv_herb_name">Лечебные травы</span> <span id="invHerbCount">(0)</span></div>
+              <div class="quest-item-desc" data-i18n="inv_herb_desc">Лечат на 25 здоровья. Использовать — клавиша R.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="invUseHerbBtn" onclick="useHerb()">Исп.</button>
+            <button class="choice-btn accept inv-use-btn" id="invUseHerbBtn" onclick="useHerb()" data-i18n="inv_herb_btn">Исп.</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🪵</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Хворост <span id="invWoodCount">(0/3)</span></div>
-              <div class="quest-item-desc">Отнеси охотнику, чтобы разжечь костёр.</div>
+              <div class="quest-item-name"><span data-i18n="inv_wood_name">Хворост</span> <span id="invWoodCount">(0/3)</span></div>
+              <div class="quest-item-desc" data-i18n="inv_wood_desc">Отнеси охотнику, чтобы разжечь костёр.</div>
             </div>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🐺</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Волчьи клыки <span id="invFangCount">(0)</span></div>
-              <div class="quest-item-desc">Трофеи с побеждённых волков.</div>
+              <div class="quest-item-name"><span data-i18n="inv_fangs_name">Волчьи клыки</span> <span id="invFangCount">(0)</span></div>
+              <div class="quest-item-desc" data-i18n="inv_fangs_desc">Трофеи с побеждённых волков.</div>
             </div>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🐾</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Коготь медведя <span id="invClawCount">(0)</span></div>
-              <div class="quest-item-desc">Редкий трофей — если справишься с медведем.</div>
+              <div class="quest-item-name"><span data-i18n="inv_claw_name">Коготь медведя</span> <span id="invClawCount">(0)</span></div>
+              <div class="quest-item-desc" data-i18n="inv_claw_desc">Редкий трофей — если справишься с медведем.</div>
             </div>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🪄</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Палки <span id="invSticksCount">(0)</span></div>
-              <div class="quest-item-desc">Материал для верстака у лагеря охотника.</div>
+              <div class="quest-item-name"><span data-i18n="inv_sticks_name">Палки</span> <span id="invSticksCount">(0)</span></div>
+              <div class="quest-item-desc" data-i18n="inv_sticks_desc">Материал для верстака у лагеря охотника.</div>
             </div>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🪨</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Камень <span id="invStoneCount">(0)</span></div>
-              <div class="quest-item-desc">Добывается киркой у валуна. Замена клыкам в крафте.</div>
+              <div class="quest-item-name"><span data-i18n="inv_stone_name">Камень</span> <span id="invStoneCount">(0)</span></div>
+              <div class="quest-item-desc" data-i18n="inv_stone_desc">Добывается киркой у валуна. Замена клыкам в крафте.</div>
             </div>
           </div>
           <div class="quest-item">
             <div class="inv-icon">⚔️</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Оружие: <span id="invWeaponName">Кулаки</span></div>
-              <div class="quest-item-desc">Скрафти лучшее на верстаке у лагеря.</div>
+              <div class="quest-item-name"><span data-i18n="inv_weapon_label">Оружие:</span> <span id="invWeaponName">Кулаки</span></div>
+              <div class="quest-item-desc" data-i18n="inv_weapon_desc">Скрафти лучшее на верстаке у лагеря.</div>
             </div>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🔥</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Факелы <span id="invTorchCount">(0)</span></div>
-              <div class="quest-item-desc" id="invTorchDesc">Ярче светит. Зажечь — клавиша T.</div>
+              <div class="quest-item-name"><span data-i18n="inv_torch_name">Факелы</span> <span id="invTorchCount">(0)</span></div>
+              <div class="quest-item-desc" id="invTorchDesc" data-i18n="inv_torch_desc_off">Ярче светит. Зажечь — клавиша T.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="invUseTorchBtn" onclick="useTorch()">Заж.</button>
+            <button class="choice-btn accept inv-use-btn" id="invUseTorchBtn" onclick="useTorch()" data-i18n="inv_torch_btn">Заж.</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🥩</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Сырое мясо <span id="invRawMeatCount">(0)</span></div>
-              <div class="quest-item-desc">Лучше приготовь у костра (E). Есть сырым — риск отравления.</div>
+              <div class="quest-item-name"><span data-i18n="inv_rawmeat_name">Сырое мясо</span> <span id="invRawMeatCount">(0)</span></div>
+              <div class="quest-item-desc" data-i18n="inv_rawmeat_desc">Лучше приготовь у костра (E). Есть сырым — риск отравления.</div>
             </div>
-            <button class="choice-btn decline inv-use-btn" id="invEatRawBtn" onclick="eatRawMeat()">Рискнуть</button>
+            <button class="choice-btn decline inv-use-btn" id="invEatRawBtn" onclick="eatRawMeat()" data-i18n="inv_rawmeat_btn">Рискнуть</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🍖</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Готовое мясо <span id="invCookedMeatCount">(0)</span></div>
-              <div class="quest-item-desc">Лечит на 40 здоровья. Съесть — клавиша F.</div>
+              <div class="quest-item-name"><span data-i18n="inv_cookedmeat_name">Готовое мясо</span> <span id="invCookedMeatCount">(0)</span></div>
+              <div class="quest-item-desc" data-i18n="inv_cookedmeat_desc">Лечит на 40 здоровья. Съесть — клавиша F.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="invEatMeatBtn" onclick="eatMeat()">Есть</button>
+            <button class="choice-btn accept inv-use-btn" id="invEatMeatBtn" onclick="eatMeat()" data-i18n="inv_cookedmeat_btn">Есть</button>
           </div>
-          <div class="quest-menu-hint">[ I или клик в стороне — закрыть ]</div>
+          <div class="quest-menu-hint" data-i18n="inv_hint">[ I или клик в стороне — закрыть ]</div>
         </div>
       </div>
 
       <div class="quest-menu" id="workbenchMenu" onclick="if(event.target===this) closeWorkbench()">
         <div class="quest-menu-box">
-          <div class="quest-menu-title">Верстак</div>
+          <div class="quest-menu-title" data-i18n="wb_title">Верстак</div>
           <div class="quest-item">
             <div class="inv-icon">🪵</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Запасы</div>
-              <div class="quest-item-desc">Палок: <span id="wbSticks">0</span> · Клыков: <span id="wbFangs">0</span> · Камня: <span id="wbStone">0</span></div>
+              <div class="quest-item-name" data-i18n="wb_supplies_name">Запасы</div>
+              <div class="quest-item-desc"><span data-i18n="wb_sticks_label">Палок:</span> <span id="wbSticks">0</span> · <span data-i18n="wb_fangs_label">Клыков:</span> <span id="wbFangs">0</span> · <span data-i18n="wb_stone_label">Камня:</span> <span id="wbStone">0</span></div>
             </div>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🔪</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Нож</div>
-              <div class="quest-item-desc">10 палок + 1 клык. Бьёт быстрее, но слабее.</div>
+              <div class="quest-item-name" data-i18n="wb_knife_name">Нож</div>
+              <div class="quest-item-desc" data-i18n="wb_knife_desc">10 палок + 1 клык. Бьёт быстрее, но слабее.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="wbKnifeBtn" onclick="craftKnife()">Сделать</button>
+            <button class="choice-btn accept inv-use-btn" id="wbKnifeBtn" onclick="craftKnife()" data-i18n="btn_craft">Сделать</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🪓</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Топор</div>
-              <div class="quest-item-desc">20 палок + 3 клыка. Медленнее, но куда сильнее.</div>
+              <div class="quest-item-name" data-i18n="wb_axe_name">Топор</div>
+              <div class="quest-item-desc" data-i18n="wb_axe_desc">20 палок + 3 клыка. Медленнее, но куда сильнее.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="wbAxeBtn" onclick="craftAxe()">Сделать</button>
+            <button class="choice-btn accept inv-use-btn" id="wbAxeBtn" onclick="craftAxe()" data-i18n="btn_craft">Сделать</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🔪</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Каменный нож</div>
-              <div class="quest-item-desc">10 палок + 1 камень. То же самое, но без клыков.</div>
+              <div class="quest-item-name" data-i18n="wb_stoneknife_name">Каменный нож</div>
+              <div class="quest-item-desc" data-i18n="wb_stoneknife_desc">10 палок + 1 камень. То же самое, но без клыков.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="wbStoneKnifeBtn" onclick="craftStoneKnife()">Сделать</button>
+            <button class="choice-btn accept inv-use-btn" id="wbStoneKnifeBtn" onclick="craftStoneKnife()" data-i18n="btn_craft">Сделать</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🪓</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Каменный топор</div>
-              <div class="quest-item-desc">20 палок + 3 камня. То же самое, но без клыков.</div>
+              <div class="quest-item-name" data-i18n="wb_stoneaxe_name">Каменный топор</div>
+              <div class="quest-item-desc" data-i18n="wb_stoneaxe_desc">20 палок + 3 камня. То же самое, но без клыков.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="wbStoneAxeBtn" onclick="craftStoneAxe()">Сделать</button>
+            <button class="choice-btn accept inv-use-btn" id="wbStoneAxeBtn" onclick="craftStoneAxe()" data-i18n="btn_craft">Сделать</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">⛏️</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Кирка</div>
-              <div class="quest-item-desc">2 палки + 3 клыка. Неплохой урон, средняя скорость. Копай ей камень у валуна.</div>
+              <div class="quest-item-name" data-i18n="wb_pickaxe_name">Кирка</div>
+              <div class="quest-item-desc" data-i18n="wb_pickaxe_desc">2 палки + 3 клыка. Неплохой урон, средняя скорость. Копай ей камень у валуна.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="wbPickaxeBtn" onclick="craftPickaxe()">Сделать</button>
+            <button class="choice-btn accept inv-use-btn" id="wbPickaxeBtn" onclick="craftPickaxe()" data-i18n="btn_craft">Сделать</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🔥</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Факел</div>
-              <div class="quest-item-desc">2 палки + 1 трава. Ярче светит, горит одну ночь.</div>
+              <div class="quest-item-name" data-i18n="wb_torch_name">Факел</div>
+              <div class="quest-item-desc" data-i18n="wb_torch_desc">2 палки + 1 трава. Ярче светит, горит одну ночь.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="wbTorchBtn" onclick="craftTorch()">Сделать</button>
+            <button class="choice-btn accept inv-use-btn" id="wbTorchBtn" onclick="craftTorch()" data-i18n="btn_craft">Сделать</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🪵</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Хворост</div>
-              <div class="quest-item-desc" id="wbFirewoodDesc">3 палки + 2 травы. Заменяет одну найденную вязанку.</div>
+              <div class="quest-item-name" data-i18n="wb_firewood_name">Хворост</div>
+              <div class="quest-item-desc" id="wbFirewoodDesc" data-i18n="wb_firewood_desc_locked">3 палки + 2 травы. Заменяет одну найденную вязанку.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="wbFirewoodBtn" onclick="craftFirewoodItem()">Сделать</button>
+            <button class="choice-btn accept inv-use-btn" id="wbFirewoodBtn" onclick="craftFirewoodItem()" data-i18n="btn_craft">Сделать</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">🏠</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Дом</div>
-              <div class="quest-item-desc" id="wbHouseDesc">40 палок. Строится вокруг охотника, с дверью — открой её вплотную.</div>
+              <div class="quest-item-name" data-i18n="wb_house_name">Дом</div>
+              <div class="quest-item-desc" id="wbHouseDesc" data-i18n="wb_house_desc_locked">40 палок. Строится вокруг охотника, с дверью — открой её вплотную.</div>
             </div>
-            <button class="choice-btn accept inv-use-btn" id="wbHouseBtn" onclick="craftHouse()">Построить</button>
+            <button class="choice-btn accept inv-use-btn" id="wbHouseBtn" onclick="craftHouse()" data-i18n="btn_build">Построить</button>
           </div>
           <div class="quest-item">
             <div class="inv-icon">⚔️</div>
             <div class="quest-item-body">
-              <div class="quest-item-name">Сейчас в руках: <span id="wbWeapon">Кулаки</span></div>
+              <div class="quest-item-name"><span data-i18n="wb_current_weapon_label">Сейчас в руках:</span> <span id="wbWeapon">Кулаки</span></div>
             </div>
           </div>
-          <div class="quest-menu-hint">[ E или клик в стороне — закрыть ]</div>
+          <div class="quest-menu-hint" data-i18n="qm_hint">[ E или клик в стороне — закрыть ]</div>
         </div>
       </div>
 
       <div class="dialogue" id="dialogue">
         <div class="dialogue-box">
-          <div class="dialogue-name" id="dialogueName">Охотник</div>
+          <div class="dialogue-name" id="dialogueName" data-i18n="dlg_hunter_name">Охотник</div>
           <div class="dialogue-text" id="dialogueText">...</div>
-          <div class="dialogue-continue" id="dialogueContinue">[ E — продолжить ]</div>
+          <div class="dialogue-continue" id="dialogueContinue" data-i18n="dlg_continue">[ E — продолжить ]</div>
           <div class="dialogue-choices" id="dialogueChoices">
-            <button class="choice-btn accept" onclick="acceptOffer()">Принять</button>
-            <button class="choice-btn decline" onclick="declineOffer()">Отказать</button>
+            <button class="choice-btn accept" onclick="acceptOffer()" data-i18n="btn_accept">Принять</button>
+            <button class="choice-btn decline" onclick="declineOffer()" data-i18n="btn_decline">Отказать</button>
           </div>
         </div>
       </div>
@@ -433,8 +433,8 @@
       <div id="wolfHpLayer"></div>
       <div class="toast" id="toast"></div>
 
-      <div class="drown-warning" id="drownWarning">Ты начинаешь задыхаться...</div>
-      <div class="drown-warning" id="poisonWarning" style="color:#639922; text-shadow:0 0 16px rgba(99,153,34,0.8); top:32%;">Тебя тошнит от отравления...</div>
+      <div class="drown-warning" id="drownWarning" data-i18n="warn_drown">Ты начинаешь задыхаться...</div>
+      <div class="drown-warning" id="poisonWarning" data-i18n="warn_poison" style="color:#639922; text-shadow:0 0 16px rgba(99,153,34,0.8); top:32%;">Тебя тошнит от отравления...</div>
 
       <div class="guide-arrow" id="guideArrow">
         <svg viewBox="0 0 40 110" width="34" height="94">
@@ -463,44 +463,59 @@
 
     <div class="rotate-hint">
       <div class="icon">⟳</div>
-      <div>Поверни устройство горизонтально —<br>«Тёмный лес» играется в альбомной ориентации.</div>
+      <div data-i18n="rotate_hint">Поверни устройство горизонтально —<br>«Тёмный лес» играется в альбомной ориентации.</div>
     </div>
 
-    <div class="overlay show" id="deviceSelectOverlay">
+    <div class="overlay show" id="langSelectOverlay">
       <h1>Тёмный лес</h1>
-      <p>На чём ты играешь?<br>От этого зависит, какое управление показать.</p>
+      <p>Выбери язык / Choose your language</p>
+      <div class="device-choices">
+        <button class="device-btn" id="langBtnRu" onclick="chooseLang('ru')">
+          <span class="device-btn-icon">🇷🇺</span>
+          <span>Русский</span>
+        </button>
+        <button class="device-btn" id="langBtnEn" onclick="chooseLang('en')">
+          <span class="device-btn-icon">🇬🇧</span>
+          <span>English</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="overlay" id="deviceSelectOverlay">
+      <h1 data-i18n="game_title">Тёмный лес</h1>
+      <p data-i18n="device_select_p">На чём ты играешь?<br>От этого зависит, какое управление показать.</p>
       <div class="device-choices">
         <button class="device-btn" id="deviceBtnDesktop" onclick="chooseDevice(false)">
           <span class="device-btn-icon">⌨</span>
-          <span>Компьютер</span>
-          <span class="device-btn-desc">Клавиатура и мышь</span>
+          <span data-i18n="device_desktop_name">Компьютер</span>
+          <span class="device-btn-desc" data-i18n="device_desktop_desc">Клавиатура и мышь</span>
         </button>
         <button class="device-btn" id="deviceBtnMobile" onclick="chooseDevice(true)">
           <span class="device-btn-icon">▤</span>
-          <span>Телефон / планшет</span>
-          <span class="device-btn-desc">Сенсорное управление</span>
+          <span data-i18n="device_mobile_name">Телефон / планшет</span>
+          <span class="device-btn-desc" data-i18n="device_mobile_desc">Сенсорное управление</span>
         </button>
       </div>
     </div>
 
     <div class="overlay" id="startOverlay">
-      <h1>Тёмный лес</h1>
-      <p>Самолёт разбился среди чёрных деревьев. Ты выжил — едва.<br>
+      <h1 data-i18n="game_title">Тёмный лес</h1>
+      <p data-i18n="start_p">Самолёт разбился среди чёрных деревьев. Ты выжил — едва.<br>
       Где-то в темноте раздаются крики о помощи.<br><br>
       Иди на голос. Может быть, вместе у вас получится выбраться живыми.</p>
-      <button onclick="startGame()">Очнуться</button>
+      <button onclick="startGame()" data-i18n="btn_wake">Очнуться</button>
     </div>
 
     <div class="overlay" id="winOverlay">
-      <h1>Ты выбрался</h1>
+      <h1 data-i18n="win_title">Ты выбрался</h1>
       <p id="winText"></p>
-      <button onclick="location.reload()">Играть снова</button>
+      <button onclick="location.reload()" data-i18n="btn_play_again">Играть снова</button>
     </div>
 
     <div class="overlay" id="loseOverlay">
-      <h1 id="loseTitle">Лес забрал тебя</h1>
-      <p id="loseText">Тьма сомкнулась быстрее, чем ты успел выйти к свету.</p>
-      <button onclick="location.reload()">Попробовать снова</button>
+      <h1 id="loseTitle" data-i18n="lose_forest_title">Лес забрал тебя</h1>
+      <p id="loseText" data-i18n="lose_forest_text">Тьма сомкнулась быстрее, чем ты успел выйти к свету.</p>
+      <button onclick="location.reload()" data-i18n="btn_try_again">Попробовать снова</button>
     </div>
   </div>
 </div>
@@ -523,6 +538,205 @@ function showToast(text){
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=> el.classList.remove('show'), 3200);
+}
+
+// ================= I18N =================
+let lang = 'ru';
+const I18N = {
+  game_title: { ru:'Тёмный лес', en:'Dark Forest' },
+  device_select_p: { ru:'На чём ты играешь?<br>От этого зависит, какое управление показать.', en:'What are you playing on?<br>This decides which controls to show.' },
+  device_desktop_name: { ru:'Компьютер', en:'Computer' },
+  device_desktop_desc: { ru:'Клавиатура и мышь', en:'Keyboard and mouse' },
+  device_mobile_name: { ru:'Телефон / планшет', en:'Phone / tablet' },
+  device_mobile_desc: { ru:'Сенсорное управление', en:'Touch controls' },
+  start_p: { ru:'Самолёт разбился среди чёрных деревьев. Ты выжил — едва.<br>Где-то в темноте раздаются крики о помощи.<br><br>Иди на голос. Может быть, вместе у вас получится выбраться живыми.',
+    en:'Your plane crashed among the black trees. You survived — barely.<br>Somewhere in the dark, someone is crying for help.<br><br>Follow the voice. Maybe together you can get out alive.' },
+  btn_wake: { ru:'Очнуться', en:'Wake up' },
+  win_title: { ru:'Ты выбрался', en:'You made it out' },
+  btn_play_again: { ru:'Играть снова', en:'Play again' },
+  btn_try_again: { ru:'Попробовать снова', en:'Try again' },
+
+  loading: { ru:'ЗАГРУЗКА ЛЕСА...', en:'LOADING FOREST...' },
+  hud_day: { ru:'ДЕНЬ', en:'DAY' },
+  hud_night: { ru:'• НОЧЬ', en:'• NIGHT' },
+  hud_hp: { ru:'Жизнь', en:'Health' },
+  hud_stamina: { ru:'Спринт', en:'Sprint' },
+  hud_hunger: { ru:'Голод', en:'Hunger' },
+  hud_thirst: { ru:'Жажда', en:'Thirst' },
+  hud_trust: { ru:'Доверие охотника', en:"Hunter's trust" },
+  banner_wake: { ru:'Очнись...', en:'Wake up...' },
+  hint_text: { ru:'W/S — вперёд/назад &nbsp;•&nbsp; A/D — шаг вбок &nbsp;•&nbsp; ПКМ+мышь или ← → — поворот &nbsp;•&nbsp; SHIFT — спринт &nbsp;•&nbsp; E — говорить / верстак / готовить &nbsp;•&nbsp; ЛКМ / ПРОБЕЛ — атаковать / рубить / копать / разделывать &nbsp;•&nbsp; I — инвентарь &nbsp;•&nbsp; R — травы &nbsp;•&nbsp; T — факел &nbsp;•&nbsp; F — есть мясо &nbsp;•&nbsp; G — пить у реки',
+    en:'W/S — walk &nbsp;•&nbsp; A/D — strafe &nbsp;•&nbsp; RMB+mouse or ← → — turn &nbsp;•&nbsp; SHIFT — sprint &nbsp;•&nbsp; E — talk / workbench / cook &nbsp;•&nbsp; LMB / SPACE — attack / chop / mine / butcher &nbsp;•&nbsp; I — inventory &nbsp;•&nbsp; R — herbs &nbsp;•&nbsp; T — torch &nbsp;•&nbsp; F — eat meat &nbsp;•&nbsp; G — drink at river' },
+
+  qm_title: { ru:'Задания', en:'Quests' },
+  q1_name: { ru:'Хворост для костра', en:'Firewood for the fire' },
+  q2_name: { ru:'Отгони волков', en:'Drive off the wolves' },
+  q3_name: { ru:'Найди тропу из леса', en:'Find the trail out' },
+  qm_hint: { ru:'[ E или клик в стороне — закрыть ]', en:'[ E or click outside — close ]' },
+  q_locked_generic: { ru:'Задание пока не выдано.', en:"Not offered yet." },
+  q1_locked: { ru:'Охотник ещё не рассказал об этом.', en:"The hunter hasn't mentioned this yet." },
+  q1_active_search: { ru:'Найди хворост в лесу ({n}/3).', en:'Find firewood in the forest ({n}/3).' },
+  q1_active_waiting: { ru:'Собрано {n}/3 — вернись к охотнику.', en:'Collected {n}/3 — return to the hunter.' },
+  q1_done: { ru:'Хворост принесён охотнику.', en:'Firewood delivered to the hunter.' },
+  q2_active_search: { ru:'Отгони волков от лагеря ({n}/3).', en:'Drive the wolves off from camp ({n}/3).' },
+  q2_active_waiting: { ru:'Волки отогнаны ({n}/3) — вернись к охотнику.', en:'Wolves driven off ({n}/3) — return to the hunter.' },
+  q2_done: { ru:'Волки отогнаны от лагеря.', en:'The wolves have been driven off.' },
+  q3_active_search: { ru:'Найди тропу — она где-то на краю леса.', en:'Find the trail — somewhere at the edge of the forest.' },
+  q3_active_waiting: { ru:'Тропа найдена — вернись к охотнику.', en:'Trail found — return to the hunter.' },
+  q3_done: { ru:'Тропа найдена, путь свободен.', en:'Trail found, the way is clear.' },
+
+  inv_title: { ru:'Инвентарь', en:'Inventory' },
+  inv_hint: { ru:'[ I или клик в стороне — закрыть ]', en:'[ I or click outside — close ]' },
+  inv_herb_name: { ru:'Лечебные травы', en:'Healing herbs' },
+  inv_herb_desc: { ru:'Лечат на 25 здоровья. Использовать — клавиша R.', en:'Heal 25 health. Use — key R.' },
+  inv_herb_btn: { ru:'Исп.', en:'Use' },
+  inv_wood_name: { ru:'Хворост', en:'Firewood' },
+  inv_wood_desc: { ru:'Отнеси охотнику, чтобы разжечь костёр.', en:'Bring it to the hunter to light the fire.' },
+  inv_wood_delivered: { ru:'(сдан)', en:'(delivered)' },
+  inv_wood_none: { ru:'(—)', en:'(—)' },
+  inv_fangs_name: { ru:'Волчьи клыки', en:'Wolf fangs' },
+  inv_fangs_desc: { ru:'Трофеи с побеждённых волков.', en:'Trophies from defeated wolves.' },
+  inv_claw_name: { ru:'Коготь медведя', en:'Bear claw' },
+  inv_claw_desc: { ru:'Редкий трофей — если справишься с медведем.', en:'A rare trophy — if you can take down the bear.' },
+  inv_sticks_name: { ru:'Палки', en:'Sticks' },
+  inv_sticks_desc: { ru:'Материал для верстака у лагеря охотника.', en:"Crafting material for the workbench at the hunter's camp." },
+  inv_stone_name: { ru:'Камень', en:'Stone' },
+  inv_stone_desc: { ru:'Добывается киркой у валуна. Замена клыкам в крафте.', en:'Mined with a pickaxe at the boulder. Substitutes for fangs in crafting.' },
+  inv_weapon_label: { ru:'Оружие:', en:'Weapon:' },
+  inv_weapon_desc: { ru:'Скрафти лучшее на верстаке у лагеря.', en:'Craft a better one at the workbench by camp.' },
+  inv_torch_name: { ru:'Факелы', en:'Torches' },
+  inv_torch_desc_off: { ru:'Ярче светит. Зажечь — клавиша T.', en:'Shines brighter. Light — key T.' },
+  inv_torch_desc_on: { ru:'Горит: ещё {sec}с.', en:'Burning: {sec}s left.' },
+  inv_torch_btn: { ru:'Заж.', en:'Light' },
+  inv_rawmeat_name: { ru:'Сырое мясо', en:'Raw meat' },
+  inv_rawmeat_desc: { ru:'Лучше приготовь у костра (E). Есть сырым — риск отравления.', en:'Better cook it at the fire (E). Eating it raw risks poisoning.' },
+  inv_rawmeat_btn: { ru:'Рискнуть', en:'Risk it' },
+  inv_cookedmeat_name: { ru:'Готовое мясо', en:'Cooked meat' },
+  inv_cookedmeat_desc: { ru:'Лечит на 40 здоровья. Съесть — клавиша F.', en:'Heals 40 health. Eat — key F.' },
+  inv_cookedmeat_btn: { ru:'Есть', en:'Eat' },
+
+  wb_title: { ru:'Верстак', en:'Workbench' },
+  wb_supplies_name: { ru:'Запасы', en:'Supplies' },
+  wb_sticks_label: { ru:'Палок:', en:'Sticks:' },
+  wb_fangs_label: { ru:'Клыков:', en:'Fangs:' },
+  wb_stone_label: { ru:'Камня:', en:'Stone:' },
+  btn_craft: { ru:'Сделать', en:'Craft' },
+  btn_build: { ru:'Построить', en:'Build' },
+  wb_knife_name: { ru:'Нож', en:'Knife' },
+  wb_knife_desc: { ru:'10 палок + 1 клык. Бьёт быстрее, но слабее.', en:'10 sticks + 1 fang. Hits faster but weaker.' },
+  wb_axe_name: { ru:'Топор', en:'Axe' },
+  wb_axe_desc: { ru:'20 палок + 3 клыка. Медленнее, но куда сильнее.', en:'20 sticks + 3 fangs. Slower, but much stronger.' },
+  wb_stoneknife_name: { ru:'Каменный нож', en:'Stone knife' },
+  wb_stoneknife_desc: { ru:'10 палок + 1 камень. То же самое, но без клыков.', en:'10 sticks + 1 stone. Same thing, no fangs needed.' },
+  wb_stoneaxe_name: { ru:'Каменный топор', en:'Stone axe' },
+  wb_stoneaxe_desc: { ru:'20 палок + 3 камня. То же самое, но без клыков.', en:'20 sticks + 3 stone. Same thing, no fangs needed.' },
+  wb_pickaxe_name: { ru:'Кирка', en:'Pickaxe' },
+  wb_pickaxe_desc: { ru:'2 палки + 3 клыка. Неплохой урон, средняя скорость. Копай ей камень у валуна.', en:'2 sticks + 3 fangs. Decent damage, medium speed. Mine stone at the boulder with it.' },
+  wb_torch_name: { ru:'Факел', en:'Torch' },
+  wb_torch_desc: { ru:'2 палки + 1 трава. Ярче светит, горит одну ночь.', en:'2 sticks + 1 herb. Shines brighter, burns one night.' },
+  wb_firewood_name: { ru:'Хворост', en:'Firewood' },
+  wb_firewood_desc_active: { ru:'3 палки + 2 травы. Заменяет одну найденную вязанку.', en:'3 sticks + 2 herbs. Substitutes for one found bundle.' },
+  wb_firewood_desc_locked: { ru:'Доступно только пока охотник ждёт хворост.', en:'Only available while the hunter is waiting for firewood.' },
+  wb_house_name: { ru:'Дом', en:'House' },
+  wb_house_desc_locked: { ru:'40 палок. Строится вокруг охотника, с дверью.', en:'40 sticks. Built around the hunter, with a door.' },
+  wb_house_desc_built: { ru:'Построен — подойди к двери вплотную и открой (E).', en:'Built — walk up to the door and open it (E).' },
+  wb_house_desc_open: { ru:'Построен, дверь открыта.', en:'Built, door open.' },
+  wb_current_weapon_label: { ru:'Сейчас в руках:', en:'Currently equipped:' },
+
+  dlg_hunter_name: { ru:'Охотник', en:'Hunter' },
+  dlg_continue: { ru:'[ E — продолжить ]', en:'[ E — continue ]' },
+  btn_accept: { ru:'Принять', en:'Accept' },
+  btn_decline: { ru:'Отказать', en:'Decline' },
+
+  warn_drown: { ru:'Ты начинаешь задыхаться...', en:"You're starting to drown..." },
+  warn_poison: { ru:'Тебя тошнит от отравления...', en:"You're sick from poisoning..." },
+  rotate_hint: { ru:'Поверни устройство горизонтально —<br>«Тёмный лес» играется в альбомной ориентации.', en:'Rotate your device to landscape —<br>"Dark Forest" is played in landscape orientation.' },
+
+  weapon_fists: { ru:'Кулаки', en:'Fists' },
+  weapon_knife: { ru:'Нож', en:'Knife' },
+  weapon_axe: { ru:'Топор', en:'Axe' },
+  weapon_pickaxe: { ru:'Кирка', en:'Pickaxe' },
+  weapon_stoneKnife: { ru:'Каменный нож', en:'Stone knife' },
+  weapon_stoneAxe: { ru:'Каменный топор', en:'Stone axe' },
+
+  toast_fire_lit: { ru:'Костёр разгорается — стало теплее и светлее.', en:'The fire catches — it feels warmer and brighter.' },
+  toast_door_open: { ru:'Дверь открыта.', en:'The door is open.' },
+  toast_house_built: { ru:'Дом построен — рядом с ним ты постепенно восстанавливаешь здоровье.', en:'House built — you slowly heal while near it.' },
+  toast_herb_pickup: { ru:'Подобрано: лечебные травы ({n})', en:'Picked up: healing herbs ({n})' },
+  toast_stick_pickup: { ru:'Подобрана палка ({n})', en:'Picked up a stick ({n})' },
+  toast_night_start: { ru:'Спускается ночь. Волки почуяли лагерь — держись у света.', en:'Night falls. Wolves have caught the scent of camp — stay near the light.' },
+  toast_night_end: { ru:'Рассвет. Волки отступили обратно во тьму.', en:'Dawn breaks. The wolves retreat back into the dark.' },
+  toast_bear_spawn: { ru:'Ты чувствуешь: в лесу теперь есть кто-то куда крупнее волков.', en:"You can feel it: something far bigger than wolves is in the forest now." },
+  toast_need_river: { ru:'Нужно быть у реки, чтобы напиться.', en:'You need to be at the river to drink.' },
+  toast_no_thirst: { ru:'Жажды нет.', en:"You're not thirsty." },
+  toast_drink: { ru:'Напился: +{n} жажды', en:'Drank: +{n} thirst' },
+  toast_hp_full: { ru:'Здоровье уже полное.', en:'Health is already full.' },
+  toast_herb_used: { ru:'Травы использованы: +{n} здоровья', en:'Used herbs: +{n} health' },
+  toast_craft_knife: { ru:'Скрафтен нож: быстрее бьёт, но слабее топора.', en:'Crafted a knife: hits faster, but weaker than an axe.' },
+  toast_craft_axe: { ru:'Скрафтен топор: медленнее, но куда сильнее.', en:'Crafted an axe: slower, but much stronger.' },
+  toast_craft_stoneknife: { ru:'Скрафтен каменный нож: быстрее бьёт, но слабее топора.', en:'Crafted a stone knife: hits faster, but weaker than an axe.' },
+  toast_craft_stoneaxe: { ru:'Скрафтен каменный топор: медленнее, но куда сильнее.', en:'Crafted a stone axe: slower, but much stronger.' },
+  toast_craft_pickaxe: { ru:'Скрафтена кирка: неплохой урон и средняя скорость.', en:'Crafted a pickaxe: decent damage, medium speed.' },
+  toast_mine_stone: { ru:'Добыт камень ({n})', en:'Mined stone ({n})' },
+  toast_craft_torch: { ru:'Скрафтен факел — хватит на одну ночь.', en:'Crafted a torch — enough for one night.' },
+  toast_torch_lit: { ru:'Факел зажжён — светит ярче на всю ночь.', en:'Torch lit — shines brighter for the whole night.' },
+  toast_craft_firewood: { ru:'Смастерил вязанку хвороста из палок и трав.', en:'Made a firewood bundle out of sticks and herbs.' },
+  toast_chop_branch: { ru:'Срублена ветка (+{n} палки)', en:'Chopped a branch (+{n} sticks)' },
+  toast_chop_tree_down: { ru:'Дерево срублено начисто (+{n} палки)', en:'Tree chopped down completely (+{n} sticks)' },
+  toast_no_fire: { ru:'Костёр не горит — готовить не на чем.', en:"The fire isn't lit — nothing to cook on." },
+  toast_no_raw_meat: { ru:'Нет сырого мяса для готовки.', en:'No raw meat to cook.' },
+  toast_meat_cooked: { ru:'Мясо приготовлено ({n})', en:'Meat cooked ({n})' },
+  toast_not_hungry: { ru:'Есть не хочется.', en:"You're not hungry." },
+  toast_meat_eaten: { ru:'Мясо съедено: +{hp} здоровья, +{hunger} голода', en:'Ate meat: +{hp} health, +{hunger} hunger' },
+  toast_raw_meat_poison: { ru:'Сырое мясо... тебя мутит. Отравление!', en:"Raw meat... you feel sick. Poisoned!" },
+  toast_butcher: { ru:'Разделал тушу: +{n} сырого мяса', en:'Butchered the carcass: +{n} raw meat' },
+  toast_bear_dead: { ru:'Медведь повержен. В лесу стало чуть тише.', en:'The bear is down. The forest feels a little quieter.' },
+  toast_torch_out: { ru:'Факел догорел.', en:'The torch burned out.' },
+  toast_door_locked: { ru:'Дверь заперта — подойди к ней вплотную и открой.', en:'The door is locked — walk up to it and open it.' },
+  toast_climbed_rock: { ru:'Забрался на камень — отсюда видно дальше.', en:'Climbed the rock — you can see further from here.' },
+  toast_poison_over: { ru:'Отравление прошло.', en:'The poisoning has passed.' },
+
+  banner_trail_open: { ru:'Тропа открыта — иди к свету', en:'The trail is open — head to the light' },
+  banner_find_firewood: { ru:'Найди хворост для костра ({n}/3)', en:'Find firewood for the fire ({n}/3)' },
+  banner_return_firewood: { ru:'Вернись к охотнику с хворостом', en:'Return to the hunter with the firewood' },
+  banner_waiting_decision: { ru:'Охотник ждёт твоего решения...', en:"The hunter is waiting for your decision..." },
+  banner_fight_wolves: { ru:'Отгони волков ({n}/3)', en:'Drive off the wolves ({n}/3)' },
+  banner_return_when_ready: { ru:'Вернись к охотнику, когда решишься', en:"Return to the hunter when you're ready" },
+  banner_find_trail: { ru:'Найди тропу — она где-то на краю леса', en:'Find the trail — somewhere at the edge of the forest' },
+  banner_waiting_ready: { ru:'Охотник ждёт, когда ты будешь готов', en:"The hunter is waiting until you're ready" },
+  banner_return_hunter: { ru:'Вернись к охотнику', en:'Return to the hunter' },
+  banner_at_trail: { ru:'Ты у тропы. Вернись к охотнику (E рядом с ним)', en:'You reached the trail. Return to the hunter (E near him)' },
+
+  win_text_trusted: { ru:'Гром вывел тебя из леса. Доверие, которое ты заслужил, спасло вам обоим жизнь.', en:'Grom led you out of the forest. The trust you earned saved both your lives.' },
+  win_text_untrusted: { ru:'Ты выбрался — но так и не узнал, можно ли было доверять охотнику до конца.', en:"You made it out — but never learned whether the hunter could truly be trusted." },
+  lose_drown_title: { ru:'Река забрала тебя', en:'The river took you' },
+  lose_drown_text: { ru:'Лёгкие наполнились водой раньше, чем ты успел выбраться на берег.', en:'Your lungs filled with water before you could reach the bank.' },
+  lose_starve_title: { ru:'Голод победил', en:'Hunger won' },
+  lose_starve_text: { ru:'Силы кончились раньше, чем ты успел найти еду.', en:'Your strength ran out before you could find food.' },
+  lose_thirst_title: { ru:'Жажда одолела', en:'Thirst overcame you' },
+  lose_thirst_text: { ru:'Ты не успел добраться до воды вовремя.', en:"You didn't reach water in time." },
+  lose_poison_title: { ru:'Отравление', en:'Poisoned' },
+  lose_poison_text: { ru:'Сырое мясо оказалось последней трапезой.', en:'The raw meat turned out to be your last meal.' },
+  lose_forest_title: { ru:'Лес забрал тебя', en:'The forest took you' },
+  lose_forest_text: { ru:'Тьма сомкнулась быстрее, чем ты успел выйти к свету.', en:'The dark closed in before you could reach the light.' }
+};
+function t(key, vars){
+  const entry = I18N[key];
+  let s = entry ? (entry[lang] || entry.ru) : key;
+  if(vars) for(const k in vars) s = s.split('{'+k+'}').join(vars[k]);
+  return s;
+}
+function applyStaticI18n(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.innerHTML = t(el.getAttribute('data-i18n'));
+  });
+}
+function chooseLang(l){
+  lang = l;
+  applyStaticI18n();
+  document.getElementById('langSelectOverlay').classList.remove('show');
+  document.getElementById('deviceSelectOverlay').classList.add('show');
 }
 
 // ================= WORLD CONSTANTS =================
@@ -561,7 +775,15 @@ scene.background = new THREE.Color(FOG_COLOR);
 scene.fog = new THREE.FogExp2(FOG_COLOR, 0.015);
 
 const camera = new THREE.PerspectiveCamera(58, 960/600, 0.1, 500);
-const renderer = new THREE.WebGLRenderer({ antialias:true });
+let renderer;
+try{
+  renderer = new THREE.WebGLRenderer({ antialias:true });
+}catch(e){
+  // some phones/webviews refuse a WebGL context (low-power mode, restricted in-app browser, etc.) -
+  // without this the whole script would die silently here and the page would just show empty HUD frames
+  document.getElementById('loading').textContent = 'Это устройство не поддерживает 3D-графику (WebGL). Попробуй другой браузер.';
+  throw e;
+}
 renderer.setSize(960,600,false); // updateStyle=false: let the "#stage canvas" CSS rule (width/height:100%) scale it, not an inline style
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 if(renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -572,6 +794,25 @@ if(renderer.toneMapping !== undefined){
   renderer.toneMappingExposure = 1.15;
 }
 stageEl.insertBefore(renderer.domElement, stageEl.firstChild);
+renderer.domElement.addEventListener('webglcontextlost', (e)=>{
+  e.preventDefault();
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('loading').textContent = 'Графический контекст потерян. Обнови страницу.';
+});
+
+// JS-driven sizing: bulletproof against any browser's quirks with the CSS calc()/min()
+// fallback below (mobile Safari/Samsung Internet address-bar resize edge cases, etc.)
+function fitStage(){
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const ratio = 960/600;
+  let w = vw, h = vw/ratio;
+  if(h > vh){ h = vh; w = vh*ratio; }
+  stageEl.style.width = Math.round(w)+'px';
+  stageEl.style.height = Math.round(h)+'px';
+}
+fitStage();
+window.addEventListener('resize', fitStage);
+window.addEventListener('orientationchange', ()=> setTimeout(fitStage, 250));
 
 // ================= SKY, SUN & MOON =================
 const DAY_SKY_COLOR = new THREE.Color(0x7fa3c4);
@@ -903,7 +1144,7 @@ function lightCampfire(){
   const flame = new THREE.Mesh(new THREE.ConeGeometry(0.5,1.3,8), new THREE.MeshStandardMaterial({color:0xff8a2a, emissive:0xff5500, emissiveIntensity:1.2}));
   flame.position.set(CAMPFIRE_POS.x, 1.0, CAMPFIRE_POS.z);
   scene.add(flame);
-  showToast("Костёр разгорается — стало теплее и светлее.");
+  showToast(t("toast_fire_lit"));
 }
 
 // workbench: a rough wooden table where sticks and trophies become tools
@@ -959,7 +1200,7 @@ function openHouseDoor(){
   houseDoorOpen = true;
   houseDoor.rotation.y = -Math.PI/2.1;
   houseDoor.position.set(-4.65, 1.5, 0.8);
-  showToast("Дверь открыта.");
+  showToast(t("toast_door_open"));
 }
 houseGroup.add(houseDoor);
 houseGroup.position.set(HOUSE_POS.x, 0, HOUSE_POS.z);
@@ -974,7 +1215,7 @@ function craftHouse(){
   houseBuilt = true;
   houseGroup.visible = true;
   houseLight.intensity = 1.8;
-  showToast("Дом построен — рядом с ним ты постепенно восстанавливаешь здоровье.");
+  showToast(t("toast_house_built"));
   refreshWorkbench();
   refreshInventory();
 }
@@ -1057,7 +1298,7 @@ function collectHerb(h){
   scene.remove(h.mesh);
   herbs = herbs.filter(x=>x!==h);
   player.inventory.herbs++;
-  showToast(`Подобрано: лечебные травы (${player.inventory.herbs})`);
+  showToast(t("toast_herb_pickup", {n:player.inventory.herbs}));
   refreshInventory();
   setTimeout(spawnOneHerb, HERB_RESPAWN_DELAY*1000);
 }
@@ -1090,7 +1331,7 @@ function collectStickPickup(s){
   scene.remove(s.mesh);
   stickPickups = stickPickups.filter(x=>x!==s);
   player.inventory.sticks++;
-  showToast(`Подобрана палка (${player.inventory.sticks})`);
+  showToast(t("toast_stick_pickup", {n:player.inventory.sticks}));
   refreshInventory();
 }
 
@@ -1189,14 +1430,14 @@ function startNightSiege(){
     placed.push(s);
     nightWolves.push(spawnHostile('wolf', s, { hp:26, maxhp:26, speed:rand(5.2,6.4), r:1.4, dmg:8, isQuestWolf:false }));
   }
-  showToast("Спускается ночь. Волки почуяли лагерь — держись у света.");
+  showToast(t("toast_night_start"));
 }
 function endNightSiege(){
   nightActive = false;
   document.getElementById('nightTag').style.display = 'none';
   for(const w of nightWolves){ if(w.alive) scene.remove(w.mesh); w.hpEl.remove(); }
   nightWolves = [];
-  showToast("Рассвет. Волки отступили обратно во тьму.");
+  showToast(t("toast_night_end"));
 }
 
 // ---- bear (day 7+) ----
@@ -1205,7 +1446,7 @@ function spawnBear(){
   bearSpawned = true;
   const corner = { x: -Math.sign(player.x||1)*(BOUND_X-15), z: rand(-BOUND_Z+15, BOUND_Z-15) };
   bear = spawnHostile('bear', corner, { hp:140, maxhp:140, speed:rand(4.0,4.6), r:2.2, dmg:18, isQuestWolf:false });
-  showToast("Ты чувствуешь: в лесу теперь есть кто-то куда крупнее волков.");
+  showToast(t("toast_bear_spawn"));
 }
 
 // ================= STATE =================
@@ -1226,10 +1467,10 @@ const DRINK_THIRST_RESTORE = 35;
 const DRINK_RANGE = 3;
 function drinkWater(){
   if(!started || dialogueOpen || questMenuOpen || invOpen || workbenchOpen) return;
-  if(!inRiver(player.x, player.z, DRINK_RANGE)){ showToast("Нужно быть у реки, чтобы напиться."); return; }
-  if(player.thirst >= player.maxThirst){ showToast("Жажды нет."); return; }
+  if(!inRiver(player.x, player.z, DRINK_RANGE)){ showToast(t("toast_need_river")); return; }
+  if(player.thirst >= player.maxThirst){ showToast(t("toast_no_thirst")); return; }
   player.thirst = clamp(player.thirst + DRINK_THIRST_RESTORE, 0, player.maxThirst);
-  showToast(`Напился: +${DRINK_THIRST_RESTORE} жажды`);
+  showToast(t("toast_drink", {n:DRINK_THIRST_RESTORE}));
 }
 let corpses = [];
 const SPRINT_DURATION = 2, SPRINT_SPEED_MULT = 1.8, SPRINT_COOLDOWN = 5;
@@ -1254,35 +1495,67 @@ let currentDay = 1;
 const DAY_LENGTH = 90; // seconds of play per in-game day
 let started = false;
 
-const DIALOGUE = {
-  first: [
-    "...Помогите! Пожалуйста, кто-нибудь!",
-    "Ты идёшь на крик через тёмный лес — и видишь его: лежит у потухшего кострища, нога неестественно вывернута.",
-    "...Ты жив? Хвала богам, ты жив. Помоги мне...",
-    "Меня зовут Гром. Выслеживал зверя, сорвался с откоса — идти не могу.",
-    "Костёр погас, а ночью в этом лесу опасно. Разожги его — принеси хворост, три вязанки, я видел их неподалёку."
-  ],
-  firewoodReminder: ["Хворост сам себя не найдёт. Ищи по лесу — я подсвечу его в темноте."],
-  firewoodDone: [
-    "Хорошо. Значит, руки у тебя не только чтобы дрожать.",
-    "Костёр не даст нам замёрзнуть, но не отпугнёт зверей.",
-    "Волки почуяли кровь после крушения. Отгони их — покажи, что ты не лёгкая добыча.",
-    "Я бы помог, да нога не держит. Придётся тебе одному."
-  ],
-  wolvesReminder: ["Волки где-то рядом. Держись на ногах — бей пробелом, когда близко."],
-  wolvesDone: [
-    "...Не ожидал. Ты дерёшься лучше, чем выглядишь.",
-    "Ладно. Я начинаю тебе верить.",
-    "Есть тропа отсюда — старая, звериная, но верная.",
-    "Теперь, когда я тебе верю — ты сможешь её заметить. Ищи в лесу."
-  ],
-  escortReminder: ["Тропа где-то на краю леса — присмотрись, теперь её видно."],
-  final: [
-    "Вот она. Свет за деревьями — это не обман, это выход.",
-    "Спасибо, что не сбежал, когда мог. Немногие остаются.",
-    "Иди. Дорога свободна. И... удачи, чужак."
-  ]
+const DIALOGUE_ALL = {
+  ru: {
+    first: [
+      "...Помогите! Пожалуйста, кто-нибудь!",
+      "Ты идёшь на крик через тёмный лес — и видишь его: лежит у потухшего кострища, нога неестественно вывернута.",
+      "...Ты жив? Хвала богам, ты жив. Помоги мне...",
+      "Меня зовут Гром. Выслеживал зверя, сорвался с откоса — идти не могу.",
+      "Костёр погас, а ночью в этом лесу опасно. Разожги его — принеси хворост, три вязанки, я видел их неподалёку."
+    ],
+    firewoodReminder: ["Хворост сам себя не найдёт. Ищи по лесу — я подсвечу его в темноте."],
+    firewoodDone: [
+      "Хорошо. Значит, руки у тебя не только чтобы дрожать.",
+      "Костёр не даст нам замёрзнуть, но не отпугнёт зверей.",
+      "Волки почуяли кровь после крушения. Отгони их — покажи, что ты не лёгкая добыча.",
+      "Я бы помог, да нога не держит. Придётся тебе одному."
+    ],
+    wolvesReminder: ["Волки где-то рядом. Держись на ногах — бей пробелом, когда близко."],
+    wolvesDone: [
+      "...Не ожидал. Ты дерёшься лучше, чем выглядишь.",
+      "Ладно. Я начинаю тебе верить.",
+      "Есть тропа отсюда — старая, звериная, но верная.",
+      "Теперь, когда я тебе верю — ты сможешь её заметить. Ищи в лесу."
+    ],
+    escortReminder: ["Тропа где-то на краю леса — присмотрись, теперь её видно."],
+    final: [
+      "Вот она. Свет за деревьями — это не обман, это выход.",
+      "Спасибо, что не сбежал, когда мог. Немногие остаются.",
+      "Иди. Дорога свободна. И... удачи, чужак."
+    ]
+  },
+  en: {
+    first: [
+      "...Help! Please, someone!",
+      "You follow the cry through the dark forest — and find him: lying by a dead campfire, his leg twisted unnaturally.",
+      "...You're alive? Thank the gods, you're alive. Help me...",
+      "My name is Grom. I was tracking a beast, fell off a ledge — I can't walk.",
+      "The fire's out, and this forest is dangerous at night. Light it — bring firewood, three bundles, I saw some nearby."
+    ],
+    firewoodReminder: ["Firewood won't find itself. Search the forest — I'll light it up for you in the dark."],
+    firewoodDone: [
+      "Good. So those hands aren't just for shaking.",
+      "The fire will keep us warm, but it won't scare off the animals.",
+      "Wolves smelled blood after the crash. Drive them off — show them you're not easy prey.",
+      "I'd help, but my leg won't hold. You'll have to do it alone."
+    ],
+    wolvesReminder: ["Wolves are somewhere nearby. Stay on your feet — hit space when they're close."],
+    wolvesDone: [
+      "...Didn't expect that. You fight better than you look.",
+      "Alright. I'm starting to trust you.",
+      "There's a trail out of here — old, an animal trail, but true.",
+      "Now that I trust you — you'll be able to spot it. Look in the forest."
+    ],
+    escortReminder: ["The trail is somewhere at the edge of the forest — look closely, you can see it now."],
+    final: [
+      "There it is. The light past the trees — it's not a trick, it's the way out.",
+      "Thank you for not running when you could have. Not many stay.",
+      "Go. The road is clear. And... good luck, stranger."
+    ]
+  }
 };
+function D(){ return DIALOGUE_ALL[lang]; }
 
 function openDialogue(lines, options){
   dialogueOpen = true;
@@ -1315,7 +1588,7 @@ function onDialogueClosed(){
   if(stage === 'final_pending'){
     stage = 'done';
     gateLight.intensity = 3.2;
-    updateQuestBanner("Тропа открыта — иди к свету");
+    updateQuestBanner(t("banner_trail_open"));
   }
 }
 function acceptOffer(){
@@ -1363,10 +1636,10 @@ function refreshInventory(){
   document.getElementById('invClawCount').textContent = `(${player.inventory.bearClaw}/1)`;
   document.getElementById('invSticksCount').textContent = `(${player.inventory.sticks})`;
   document.getElementById('invStoneCount').textContent = `(${player.inventory.stone})`;
-  document.getElementById('invWeaponName').textContent = WEAPON_STATS[player.weapon].label;
+  document.getElementById('invWeaponName').textContent = t(WEAPON_STATS[player.weapon].labelKey);
   const woodN = (typeof firewood !== 'undefined') ? firewood.filter(f=>f.collected).length : 0;
   document.getElementById('invWoodCount').textContent =
-    (stage==='firewood' || stage==='firewood_waiting') ? `(${woodN}/3)` : (STAGES_AFTER_FIREWOOD.includes(stage) ? "(сдан)" : "(—)");
+    (stage==='firewood' || stage==='firewood_waiting') ? `(${woodN}/3)` : (STAGES_AFTER_FIREWOOD.includes(stage) ? t("inv_wood_delivered") : t("inv_wood_none"));
   const btn = document.getElementById('invUseHerbBtn');
   btn.disabled = player.inventory.herbs <= 0 || player.hp >= player.maxhp;
   btn.style.opacity = btn.disabled ? '0.4' : '1';
@@ -1375,10 +1648,10 @@ function refreshInventory(){
   const torchDesc = document.getElementById('invTorchDesc');
   const torchBtn = document.getElementById('invUseTorchBtn');
   if(torchActive){
-    torchDesc.textContent = `Горит: ещё ${Math.ceil(torchTimeLeft)}с.`;
+    torchDesc.textContent = t("inv_torch_desc_on", {sec:Math.ceil(torchTimeLeft)});
     torchBtn.disabled = true;
   } else {
-    torchDesc.textContent = "Ярче светит. Зажечь — клавиша T.";
+    torchDesc.textContent = t("inv_torch_desc_off");
     torchBtn.disabled = player.inventory.torches <= 0;
   }
   torchBtn.style.opacity = torchBtn.disabled ? '0.4' : '1';
@@ -1394,22 +1667,22 @@ function refreshInventory(){
 }
 function useHerb(){
   if(player.inventory.herbs <= 0) return;
-  if(player.hp >= player.maxhp){ showToast("Здоровье уже полное."); return; }
+  if(player.hp >= player.maxhp){ showToast(t("toast_hp_full")); return; }
   player.inventory.herbs--;
   player.hp = clamp(player.hp + HERB_HEAL, 0, player.maxhp);
-  showToast(`Травы использованы: +${HERB_HEAL} здоровья`);
+  showToast(t("toast_herb_used", {n:HERB_HEAL}));
   refreshInventory();
 }
 
 // ================= WORKBENCH / CRAFTING =================
 let workbenchOpen = false;
 const WEAPON_STATS = {
-  fists: { dmg:15, cooldown:0.35, label:'Кулаки' },
-  knife: { dmg:22, cooldown:0.22, label:'Нож' },
-  axe:   { dmg:34, cooldown:0.5,  label:'Топор' },
-  pickaxe: { dmg:28, cooldown:0.4, label:'Кирка' },
-  stoneKnife: { dmg:22, cooldown:0.22, label:'Каменный нож' },
-  stoneAxe:   { dmg:34, cooldown:0.5,  label:'Каменный топор' }
+  fists: { dmg:15, cooldown:0.35, labelKey:'weapon_fists' },
+  knife: { dmg:22, cooldown:0.22, labelKey:'weapon_knife' },
+  axe:   { dmg:34, cooldown:0.5,  labelKey:'weapon_axe' },
+  pickaxe: { dmg:28, cooldown:0.4, labelKey:'weapon_pickaxe' },
+  stoneKnife: { dmg:22, cooldown:0.22, labelKey:'weapon_stoneKnife' },
+  stoneAxe:   { dmg:34, cooldown:0.5,  labelKey:'weapon_stoneAxe' }
 };
 function toggleWorkbench(){
   workbenchOpen = !workbenchOpen;
@@ -1425,7 +1698,7 @@ function craftKnife(){
   player.inventory.sticks -= 10;
   player.inventory.wolfFangs -= 1;
   player.weapon = 'knife';
-  showToast("Скрафтен нож: быстрее бьёт, но слабее топора.");
+  showToast(t("toast_craft_knife"));
   refreshWorkbench();
   refreshInventory();
 }
@@ -1434,7 +1707,7 @@ function craftAxe(){
   player.inventory.sticks -= 20;
   player.inventory.wolfFangs -= 3;
   player.weapon = 'axe';
-  showToast("Скрафтен топор: медленнее, но куда сильнее.");
+  showToast(t("toast_craft_axe"));
   refreshWorkbench();
   refreshInventory();
 }
@@ -1443,7 +1716,7 @@ function craftStoneKnife(){
   player.inventory.sticks -= 10;
   player.inventory.stone -= 1;
   player.weapon = 'stoneKnife';
-  showToast("Скрафтен каменный нож: быстрее бьёт, но слабее топора.");
+  showToast(t("toast_craft_stoneknife"));
   refreshWorkbench();
   refreshInventory();
 }
@@ -1452,7 +1725,7 @@ function craftStoneAxe(){
   player.inventory.sticks -= 20;
   player.inventory.stone -= 3;
   player.weapon = 'stoneAxe';
-  showToast("Скрафтен каменный топор: медленнее, но куда сильнее.");
+  showToast(t("toast_craft_stoneaxe"));
   refreshWorkbench();
   refreshInventory();
 }
@@ -1462,13 +1735,13 @@ function craftPickaxe(){
   player.inventory.sticks -= PICKAXE_STICKS_COST;
   player.inventory.wolfFangs -= PICKAXE_FANGS_COST;
   player.weapon = 'pickaxe';
-  showToast("Скрафтена кирка: неплохой урон и средняя скорость.");
+  showToast(t("toast_craft_pickaxe"));
   refreshWorkbench();
   refreshInventory();
 }
 function mineStone(){
   player.inventory.stone++;
-  showToast(`Добыт камень (${player.inventory.stone})`);
+  showToast(t("toast_mine_stone", {n:player.inventory.stone}));
   spawnDebris(ROCK_POS.x + rand(-2,2), 1.2, ROCK_POS.z + rand(-2,2), rockChipMat, 6);
   refreshWorkbench();
   refreshInventory();
@@ -1480,7 +1753,7 @@ function craftTorch(){
   player.inventory.sticks -= TORCH_STICKS_COST;
   player.inventory.herbs -= TORCH_HERBS_COST;
   player.inventory.torches++;
-  showToast("Скрафтен факел — хватит на одну ночь.");
+  showToast(t("toast_craft_torch"));
   refreshWorkbench();
   refreshInventory();
 }
@@ -1491,7 +1764,7 @@ function useTorch(){
   player.inventory.torches--;
   torchActive = true;
   torchTimeLeft = TORCH_DURATION;
-  showToast("Факел зажжён — светит ярче на всю ночь.");
+  showToast(t("toast_torch_lit"));
   refreshInventory();
 }
 const FIREWOOD_CRAFT_STICKS = 3, FIREWOOD_CRAFT_HERBS = 2;
@@ -1505,12 +1778,12 @@ function craftFirewoodItem(){
   target.collected = true;
   scene.remove(target.mesh);
   const n = firewood.filter(f=>f.collected).length;
-  updateQuestBanner(`Найди хворост для костра (${n}/3)`);
+  updateQuestBanner(t("banner_find_firewood", {n}));
   if(n >= 3){
     stage = 'firewood_waiting';
-    updateQuestBanner("Вернись к охотнику с хворостом");
+    updateQuestBanner(t("banner_return_firewood"));
   }
-  showToast("Смастерил вязанку хвороста из палок и трав.");
+  showToast(t("toast_craft_firewood"));
   refreshWorkbench();
   refreshInventory();
 }
@@ -1518,7 +1791,7 @@ function refreshWorkbench(){
   document.getElementById('wbSticks').textContent = player.inventory.sticks;
   document.getElementById('wbFangs').textContent = player.inventory.wolfFangs;
   document.getElementById('wbStone').textContent = player.inventory.stone;
-  document.getElementById('wbWeapon').textContent = WEAPON_STATS[player.weapon].label;
+  document.getElementById('wbWeapon').textContent = t(WEAPON_STATS[player.weapon].labelKey);
 
   const knifeBtn = document.getElementById('wbKnifeBtn');
   const knifeReady = player.inventory.sticks >= 10 && player.inventory.wolfFangs >= 1;
@@ -1558,16 +1831,16 @@ function refreshWorkbench(){
   firewoodBtn.disabled = !firewoodReady;
   firewoodBtn.style.opacity = firewoodBtn.disabled ? '0.4' : '1';
   firewoodDesc.textContent = stage === 'firewood'
-    ? "3 палки + 2 травы. Заменяет одну найденную вязанку."
-    : "Доступно только пока охотник ждёт хворост.";
+    ? t("wb_firewood_desc_active")
+    : t("wb_firewood_desc_locked");
 
   const houseBtn = document.getElementById('wbHouseBtn');
   const houseDesc = document.getElementById('wbHouseDesc');
   houseBtn.disabled = houseBuilt || player.inventory.sticks < HOUSE_COST_STICKS;
   houseBtn.style.opacity = houseBtn.disabled ? '0.4' : '1';
   houseDesc.textContent = houseBuilt
-    ? (houseDoorOpen ? "Построен, дверь открыта." : "Построен — подойди к двери вплотную и открой (E).")
-    : "40 палок. Строится вокруг охотника, с дверью.";
+    ? (houseDoorOpen ? t("wb_house_desc_open") : t("wb_house_desc_built"))
+    : t("wb_house_desc_locked");
 }
 
 const STAGES_AFTER_FIREWOOD = ['wolves','wolves_waiting','escort','escort_waiting','final_pending','done'];
@@ -1590,9 +1863,9 @@ function refreshQuestMenu(){
   else if(STAGES_AFTER_FIREWOOD.includes(stage)) s1 = 'done';
   const woodCount = firewood.filter(f=>f.collected).length;
   setQuestUI('qItem1','qDot1','qDesc1', s1,
-    stage==='firewood_waiting' ? `Собрано ${woodCount}/3 — вернись к охотнику.` : `Найди хворост в лесу (${woodCount}/3).`,
-    "Хворост принесён охотнику.",
-    "Охотник ещё не рассказал об этом задании."
+    stage==='firewood_waiting' ? t("q1_active_waiting", {n:woodCount}) : t("q1_active_search", {n:woodCount}),
+    t("q1_done"),
+    t("q1_locked")
   );
 
   // quest 2: wolves
@@ -1600,9 +1873,9 @@ function refreshQuestMenu(){
   if(stage === 'wolves' || stage === 'wolves_waiting') s2 = 'active';
   else if(STAGES_AFTER_WOLVES.includes(stage)) s2 = 'done';
   setQuestUI('qItem2','qDot2','qDesc2', s2,
-    stage==='wolves_waiting' ? `Волки отогнаны (${wolvesDefeated}/3) — вернись к охотнику.` : `Отгони волков от лагеря (${wolvesDefeated}/3).`,
-    "Волки отогнаны от лагеря.",
-    "Задание пока не выдано."
+    stage==='wolves_waiting' ? t("q2_active_waiting", {n:wolvesDefeated}) : t("q2_active_search", {n:wolvesDefeated}),
+    t("q2_done"),
+    t("q_locked_generic")
   );
 
   // quest 3: trail
@@ -1610,9 +1883,9 @@ function refreshQuestMenu(){
   if(stage === 'escort' || stage === 'escort_waiting') s3 = 'active';
   else if(STAGES_AFTER_TRAIL.includes(stage)) s3 = 'done';
   setQuestUI('qItem3','qDot3','qDesc3', s3,
-    stage==='escort_waiting' ? "Тропа найдена — вернись к охотнику." : "Найди тропу — она где-то на краю леса.",
-    "Тропа найдена, путь свободен.",
-    "Задание пока не выдано."
+    stage==='escort_waiting' ? t("q3_active_waiting") : t("q3_active_search"),
+    t("q3_done"),
+    t("q_locked_generic")
   );
 }
 
@@ -1620,30 +1893,30 @@ function refreshQuestMenu(){
 function acceptFirewoodQuest(){
   stage = 'firewood';
   spawnFirewood();
-  updateQuestBanner("Найди хворост для костра (0/3)");
+  updateQuestBanner(t("banner_find_firewood", {n:0}));
 }
 function declineFirewoodQuest(){
-  updateQuestBanner("Охотник ждёт твоего решения...");
+  updateQuestBanner(t("banner_waiting_decision"));
 }
 function acceptWolfQuest(){
   setTrust(1);
   stage = 'wolves';
   lightCampfire();
   spawnWolves();
-  updateQuestBanner("Отгони волков (0/3)");
+  updateQuestBanner(t("banner_fight_wolves", {n:0}));
 }
 function declineWolfQuest(){
-  updateQuestBanner("Вернись к охотнику, когда решишься");
+  updateQuestBanner(t("banner_return_when_ready"));
 }
 function acceptTrailQuest(){
   setTrust(2);
   stage = 'escort';
   gateGroup.visible = true;
   gateLight.intensity = 1.3; // dim glow, findable but not yet "unlocked"
-  updateQuestBanner("Найди тропу — она где-то на краю леса");
+  updateQuestBanner(t("banner_find_trail"));
 }
 function declineTrailQuest(){
-  updateQuestBanner("Охотник ждёт, когда ты будешь готов");
+  updateQuestBanner(t("banner_waiting_ready"));
 }
 
 // ================= INPUT =================
@@ -1676,7 +1949,7 @@ function startGame(){
   started = true;
   spawnHerbs();
   spawnStickPickups();
-  openDialogue(DIALOGUE.first, {isOffer:true, onAccept:acceptFirewoodQuest, onDecline:declineFirewoodQuest});
+  openDialogue(D().first, {isOffer:true, onAccept:acceptFirewoodQuest, onDecline:declineFirewoodQuest});
 }
 
 // right mouse button drag turns the player, same as A/D
@@ -1819,28 +2092,28 @@ function tryChopTree(){
   const gained = 2;
   player.inventory.sticks += gained;
   spawnDebris(nearest.x, 1.5, nearest.z, woodChipMat, 5);
-  showToast(nearest.woodCharge > 0 ? `Срублена ветка (+${gained} палки)` : `Дерево срублено начисто (+${gained} палки)`);
+  showToast(nearest.woodCharge > 0 ? t("toast_chop_branch", {n:gained}) : t("toast_chop_tree_down", {n:gained}));
   refreshInventory();
   refreshWorkbench();
   return true;
 }
 const BUTCHER_RANGE = 3.5;
 function tryCookMeat(){
-  if(!fireLit){ showToast("Костёр не горит — готовить не на чем."); return; }
-  if(player.inventory.rawMeat <= 0){ showToast("Нет сырого мяса для готовки."); return; }
+  if(!fireLit){ showToast(t("toast_no_fire")); return; }
+  if(player.inventory.rawMeat <= 0){ showToast(t("toast_no_raw_meat")); return; }
   player.inventory.rawMeat--;
   player.inventory.cookedMeat++;
-  showToast(`Мясо приготовлено (${player.inventory.cookedMeat})`);
+  showToast(t("toast_meat_cooked", {n:player.inventory.cookedMeat}));
   refreshInventory();
 }
 const MEAT_HEAL = 40;
 function eatMeat(){
   if(player.inventory.cookedMeat <= 0) return;
-  if(player.hp >= player.maxhp && player.hunger >= player.maxHunger){ showToast("Есть не хочется."); return; }
+  if(player.hp >= player.maxhp && player.hunger >= player.maxHunger){ showToast(t("toast_not_hungry")); return; }
   player.inventory.cookedMeat--;
   player.hp = clamp(player.hp + MEAT_HEAL, 0, player.maxhp);
   player.hunger = clamp(player.hunger + MEAT_HUNGER_RESTORE, 0, player.maxHunger);
-  showToast(`Мясо съедено: +${MEAT_HEAL} здоровья, +${MEAT_HUNGER_RESTORE} голода`);
+  showToast(t("toast_meat_eaten", {hp:MEAT_HEAL, hunger:MEAT_HUNGER_RESTORE}));
   refreshInventory();
 }
 const RAW_MEAT_HUNGER_RESTORE = 20;
@@ -1852,7 +2125,7 @@ function eatRawMeat(){
   player.hunger = clamp(player.hunger + RAW_MEAT_HUNGER_RESTORE, 0, player.maxHunger);
   poisoned = true;
   poisonTimeLeft = POISON_DURATION;
-  showToast("Сырое мясо... тебя мутит. Отравление!");
+  showToast(t("toast_raw_meat_poison"));
   refreshInventory();
 }
 function tryButcherCorpse(){
@@ -1865,7 +2138,7 @@ function tryButcherCorpse(){
   if(!nearest) return false;
   nearest.hasMeat = false;
   player.inventory.rawMeat += nearest.meatYield;
-  showToast(`Разделал тушу: +${nearest.meatYield} сырого мяса`);
+  showToast(t("toast_butcher", {n:nearest.meatYield}));
   refreshInventory();
   return true;
 }
@@ -1919,15 +2192,15 @@ function doAttack(){
       if(nearest.isQuestWolf){
         wolvesDefeated++;
         if(stage==='wolves' || stage==='wolves_waiting'){
-          updateQuestBanner(`Отгони волков (${wolvesDefeated}/3)`);
+          updateQuestBanner(t("banner_fight_wolves", {n:wolvesDefeated}));
           if(wolvesDefeated >= 3){
             stage = 'wolves_waiting';
-            updateQuestBanner("Вернись к охотнику");
+            updateQuestBanner(t("banner_return_hunter"));
           }
         }
       } else if(nearest.kind === 'bear'){
         player.inventory.bearClaw = 1;
-        showToast("Медведь повержен. В лесу стало чуть тише.");
+        showToast(t("toast_bear_dead"));
       }
       refreshInventory();
     }
@@ -1948,19 +2221,19 @@ function tryInteractHunter(){
   if(dist(player.x,player.z,HUNTER_POS.x,HUNTER_POS.z) > 6.5) return;
   if(questMenuOpen){ closeQuestMenu(); return; }
   if(stage === 'intro'){
-    openDialogue(DIALOGUE.first, {isOffer:true, onAccept:acceptFirewoodQuest, onDecline:declineFirewoodQuest});
+    openDialogue(D().first, {isOffer:true, onAccept:acceptFirewoodQuest, onDecline:declineFirewoodQuest});
   } else if(stage === 'firewood'){
     toggleQuestMenu();
   } else if(stage === 'firewood_waiting'){
-    openDialogue(DIALOGUE.firewoodDone, {isOffer:true, onAccept:acceptWolfQuest, onDecline:declineWolfQuest});
+    openDialogue(D().firewoodDone, {isOffer:true, onAccept:acceptWolfQuest, onDecline:declineWolfQuest});
   } else if(stage === 'wolves'){
     toggleQuestMenu();
   } else if(stage === 'wolves_waiting'){
-    openDialogue(DIALOGUE.wolvesDone, {isOffer:true, onAccept:acceptTrailQuest, onDecline:declineTrailQuest});
+    openDialogue(D().wolvesDone, {isOffer:true, onAccept:acceptTrailQuest, onDecline:declineTrailQuest});
   } else if(stage === 'escort'){
     toggleQuestMenu();
   } else if(stage === 'escort_waiting'){
-    setTrust(3); stage = 'final_pending'; openDialogue(DIALOGUE.final);
+    setTrust(3); stage = 'final_pending'; openDialogue(D().final);
   }
 }
 
@@ -2105,7 +2378,7 @@ function update(dt){
     torchTimeLeft -= dt;
     if(torchTimeLeft <= 0){
       torchActive = false;
-      showToast("Факел догорел.");
+      showToast(t("toast_torch_out"));
       refreshInventory();
     }
   }
@@ -2132,7 +2405,7 @@ function update(dt){
       if(dCampfire <= 6) candidates.push({d:dCampfire, fn:tryCookMeat});
       if(houseBuilt && !houseDoorOpen && dDoor <= DOOR_INTERACT_RADIUS) candidates.push({d:dDoor, fn:openHouseDoor});
       if(houseBuilt && !houseDoorOpen && dHunter <= 6.5){
-        candidates.push({d:dHunter, fn:()=>showToast("Дверь заперта — подойди к ней вплотную и открой.")});
+        candidates.push({d:dHunter, fn:()=>showToast(t("toast_door_locked"))});
       } else if((!houseBuilt || houseDoorOpen) && dHunter <= 6.5){
         candidates.push({d:dHunter, fn:tryInteractHunter});
       }
@@ -2145,12 +2418,14 @@ function update(dt){
   eWasDown = eDown;
 
   if(!dialogueOpen && !questMenuOpen && !invOpen && !workbenchOpen && started){
-    let turn = 0, move = 0;
-    if(keys['a']||keys['arrowleft']) turn += 1;
-    if(keys['d']||keys['arrowright']) turn -= 1;
+    let turn = 0, move = 0, strafe = 0;
+    if(keys['arrowleft']) turn += 1;
+    if(keys['arrowright']) turn -= 1;
+    if(keys['a']) strafe -= 1;
+    if(keys['d']) strafe += 1;
     if(keys['w']||keys['arrowup']) move += 1;
     if(keys['s']||keys['arrowdown']) move -= 1;
-    const isMoving = (move !== 0);
+    const isMoving = (move !== 0 || strafe !== 0);
 
     if(sprintCooldown > 0) sprintCooldown -= dt;
     if(sprintTimeLeft > 0){
@@ -2186,8 +2461,9 @@ function update(dt){
 
     if(isMoving){
       const fx = Math.sin(player.rotY), fz = Math.cos(player.rotY);
-      const nx = player.x + fx*move*curSpeed*dt;
-      const nz = player.z + fz*move*curSpeed*dt;
+      const rx = Math.sin(player.rotY + Math.PI/2), rz = Math.cos(player.rotY + Math.PI/2); // right vector, for A/D strafing
+      const nx = player.x + (fx*move + rx*strafe)*curSpeed*dt;
+      const nz = player.z + (fz*move + rz*strafe)*curSpeed*dt;
       if(!collidesTreesPlayer(nx, player.z, player.r)) player.x = clamp(nx, -BOUND_X+1, BOUND_X-1);
       if(!collidesTreesPlayer(player.x, nz, player.r)) player.z = clamp(nz, -BOUND_Z+1, BOUND_Z-1);
     }
@@ -2195,7 +2471,7 @@ function update(dt){
     player.groundY = rockElevation(player.x, player.z);
     if(player.groundY > ROCK_HEIGHT*0.8 && !climbedRockOnce){
       climbedRockOnce = true;
-      showToast("Забрался на камень — отсюда видно дальше.");
+      showToast(t("toast_climbed_rock"));
     }
 
     if(houseBuilt && dist(player.x,player.z,HOUSE_POS.x,HOUSE_POS.z) < HOUSE_RADIUS && player.hp < player.maxhp){
@@ -2215,7 +2491,7 @@ function update(dt){
       if(player.hp <= 0){ doLose('poison'); }
       if(poisonTimeLeft <= 0){
         poisoned = false;
-        showToast("Отравление прошло.");
+        showToast(t("toast_poison_over"));
       }
     } else {
       poisonWarnEl.classList.remove('show');
@@ -2240,10 +2516,10 @@ function update(dt){
         }
         if(f.collected) n++;
       }
-      updateQuestBanner(`Найди хворост для костра (${n}/3)`);
+      updateQuestBanner(t("banner_find_firewood", {n}));
       if(n>=3 && stage==='firewood'){
         stage = 'firewood_waiting';
-        updateQuestBanner("Вернись к охотнику с хворостом");
+        updateQuestBanner(t("banner_return_firewood"));
       }
     }
 
@@ -2261,7 +2537,7 @@ function update(dt){
       if(dist(player.x,player.z,EXIT_POS.x,EXIT_POS.z) < 5){
         if(stage==='escort'){
           stage='escort_waiting';
-          updateQuestBanner("Ты у тропы. Вернись к охотнику (E рядом с ним)");
+          updateQuestBanner(t("banner_at_trail"));
         } else if(stage==='done'){
           doWin();
         }
@@ -2340,27 +2616,27 @@ function updateCamera(dt){
 function doWin(){
   started = false;
   document.getElementById('winText').textContent = trust >= 3
-    ? "Гром вывел тебя из леса. Доверие, которое ты заслужил, спасло вам обоим жизнь."
-    : "Ты выбрался — но так и не узнал, можно ли было доверять охотнику до конца.";
+    ? t("win_text_trusted")
+    : t("win_text_untrusted");
   document.getElementById('winOverlay').classList.add('show');
 }
 function doLose(reason){
   started = false;
   if(reason === 'drowning'){
-    document.getElementById('loseTitle').textContent = "Река забрала тебя";
-    document.getElementById('loseText').textContent = "Лёгкие наполнились водой раньше, чем ты успел выбраться на берег.";
+    document.getElementById('loseTitle').textContent = t("lose_drown_title");
+    document.getElementById('loseText').textContent = t("lose_drown_text");
   } else if(reason === 'starvation'){
-    document.getElementById('loseTitle').textContent = "Голод победил";
-    document.getElementById('loseText').textContent = "Силы кончились раньше, чем ты успел найти еду.";
+    document.getElementById('loseTitle').textContent = t("lose_starve_title");
+    document.getElementById('loseText').textContent = t("lose_starve_text");
   } else if(reason === 'dehydration'){
-    document.getElementById('loseTitle').textContent = "Жажда одолела";
-    document.getElementById('loseText').textContent = "Ты не успел добраться до воды вовремя.";
+    document.getElementById('loseTitle').textContent = t("lose_thirst_title");
+    document.getElementById('loseText').textContent = t("lose_thirst_text");
   } else if(reason === 'poison'){
-    document.getElementById('loseTitle').textContent = "Отравление";
-    document.getElementById('loseText').textContent = "Сырое мясо оказалось последней трапезой.";
+    document.getElementById('loseTitle').textContent = t("lose_poison_title");
+    document.getElementById('loseText').textContent = t("lose_poison_text");
   } else {
-    document.getElementById('loseTitle').textContent = "Лес забрал тебя";
-    document.getElementById('loseText').textContent = "Тьма сомкнулась быстрее, чем ты успел выйти к свету.";
+    document.getElementById('loseTitle').textContent = t("lose_forest_title");
+    document.getElementById('loseText').textContent = t("lose_forest_text");
   }
   document.getElementById('loseOverlay').classList.add('show');
 }
