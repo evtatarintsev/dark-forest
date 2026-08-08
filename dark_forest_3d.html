@@ -2461,7 +2461,7 @@ function update(dt){
 
     if(isMoving){
       const fx = Math.sin(player.rotY), fz = Math.cos(player.rotY);
-      const rx = Math.sin(player.rotY + Math.PI/2), rz = Math.cos(player.rotY + Math.PI/2); // right vector, for A/D strafing
+      const rx = Math.sin(player.rotY - Math.PI/2), rz = Math.cos(player.rotY - Math.PI/2); // right vector, for A/D strafing
       const nx = player.x + (fx*move + rx*strafe)*curSpeed*dt;
       const nz = player.z + (fz*move + rz*strafe)*curSpeed*dt;
       if(!collidesTreesPlayer(nx, player.z, player.r)) player.x = clamp(nx, -BOUND_X+1, BOUND_X-1);
