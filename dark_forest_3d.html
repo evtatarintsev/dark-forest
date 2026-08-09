@@ -1472,7 +1472,7 @@ let nightWolves = [];  // temporary night-siege attackers
 let bear = null;       // day-7 threat
 
 const wolfBodyMat = new THREE.MeshStandardMaterial({ color:0x141414, roughness:0.9 });
-const wolfEyeMat = new THREE.MeshStandardMaterial({ color:0xff0000, emissive:0xff0000, emissiveIntensity:2.5, toneMapped:false });
+const wolfEyeMat = new THREE.MeshStandardMaterial({ color:0xff0000, emissive:0xff0000, emissiveIntensity:5, toneMapped:false });
 function buildWolf(){
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.0,2.6), wolfBodyMat);
