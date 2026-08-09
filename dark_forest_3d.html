@@ -156,7 +156,12 @@
   body.touch-device .hint{ display:none; }
 
   .joystick-zone{
-    position:absolute; left:18px; bottom:18px; width:132px; height:132px;
+    /* position:fixed anchors straight to the real browser viewport, which the OS keeps
+       perfectly in sync with actual touch coordinates - position:absolute here instead
+       (relative to the JS-managed #stage box) could drift out of sync with it on some
+       Android browsers, e.g. around address-bar show/hide, producing a hitbox offset
+       from the visible icon */
+    position:fixed; left:18px; bottom:18px; width:132px; height:132px;
     border-radius:50%; background:rgba(20,16,10,0.35); border:1px solid rgba(232,163,61,0.35);
     touch-action:none; z-index:25; pointer-events:auto;
   }
@@ -166,7 +171,7 @@
     will-change:transform;
   }
   .touch-buttons{
-    position:absolute; right:16px; bottom:16px; z-index:25;
+    position:fixed; right:16px; bottom:16px; z-index:25;
     display:flex; flex-direction:column; align-items:flex-end; gap:14px;
   }
   .touch-btn-row{ display:flex; gap:14px; }
