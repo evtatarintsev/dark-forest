@@ -167,18 +167,24 @@
   }
   .touch-buttons{
     position:absolute; right:16px; bottom:16px; z-index:25;
-    display:flex; flex-direction:column; align-items:flex-end; gap:10px;
+    display:flex; flex-direction:column; align-items:flex-end; gap:14px;
   }
-  .touch-btn-row{ display:flex; gap:10px; }
+  .touch-btn-row{ display:flex; gap:14px; }
   .touch-btn{
     pointer-events:auto; -webkit-tap-highlight-color:transparent; user-select:none;
     border-radius:50%; background:rgba(20,16,10,0.6); border:1px solid var(--ember-dim);
     color:var(--ember); font-family:'Bitter',serif; font-weight:700; display:flex;
     align-items:center; justify-content:center; touch-action:none; text-align:center; line-height:1;
+    position:relative;
+  }
+  /* invisible hit-area padding: keeps the visual circle compact while still meeting the
+     ~44px minimum touch-target size, so adjacent buttons are harder to mis-tap */
+  .touch-btn::before{
+    content:''; position:absolute; inset:-7px; border-radius:50%;
   }
   .touch-btn.attack{ width:74px; height:74px; font-size:26px; }
   .touch-btn.interact{ width:60px; height:60px; font-size:14px; letter-spacing:1px; }
-  .touch-btn.small{ width:46px; height:46px; font-size:16px; }
+  .touch-btn.small{ width:50px; height:50px; font-size:16px; }
   .touch-btn:active{ background:rgba(232,163,61,0.35); }
 
   .rotate-hint{
@@ -193,11 +199,12 @@
   @media (max-height:420px){
     .joystick-zone{ width:104px; height:104px; left:10px; bottom:10px; }
     .joystick-knob{ width:44px; height:44px; margin:-22px 0 0 -22px; }
-    .touch-buttons{ right:10px; bottom:10px; gap:6px; }
-    .touch-btn-row{ gap:6px; }
+    .touch-buttons{ right:10px; bottom:10px; gap:8px; }
+    .touch-btn-row{ gap:8px; }
+    .touch-btn::before{ inset:-4px; } /* smaller invisible hit-area padding to match the tighter 8px gap without overlapping the neighbor's */
     .touch-btn.attack{ width:58px; height:58px; font-size:20px; }
     .touch-btn.interact{ width:48px; height:48px; font-size:12px; }
-    .touch-btn.small{ width:38px; height:38px; font-size:13px; }
+    .touch-btn.small{ width:44px; height:44px; font-size:14px; }
   }
 </style>
 </head>
