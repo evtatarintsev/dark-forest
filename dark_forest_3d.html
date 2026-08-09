@@ -99,6 +99,8 @@
 
   .wolf-hp{ display:none !important; }
   .wolf-hp-fill{ height:100%; background:#c94444; }
+  .hunter-hp{ position:absolute; width:34px; height:5px; background:rgba(0,0,0,0.55); border:1px solid #000; pointer-events:none; }
+  .hunter-hp-fill{ height:100%; background:#6b8a4a; transition:width .15s; }
 
   .quest-menu{ position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(2,2,2,0.75); display:none; align-items:center; justify-content:center; z-index:15; pointer-events:auto; }
   .quest-menu.show{ display:flex; }
@@ -447,6 +449,7 @@
       </div>
 
       <div id="wolfHpLayer"></div>
+      <div class="hunter-hp" id="hunterHpBar" style="display:none;"><div class="hunter-hp-fill" id="hunterHpFill" style="width:100%"></div></div>
       <div class="toast" id="toast"></div>
 
       <div class="drown-warning" id="drownWarning" data-i18n="warn_drown">Ты начинаешь задыхаться...</div>
@@ -734,7 +737,9 @@ const I18N = {
   lose_poison_title: { ru:'Отравление', en:'Poisoned' },
   lose_poison_text: { ru:'Сырое мясо оказалось последней трапезой.', en:'The raw meat turned out to be your last meal.' },
   lose_forest_title: { ru:'Лес забрал тебя', en:'The forest took you' },
-  lose_forest_text: { ru:'Тьма сомкнулась быстрее, чем ты успел выйти к свету.', en:'The dark closed in before you could reach the light.' }
+  lose_forest_text: { ru:'Тьма сомкнулась быстрее, чем ты успел выйти к свету.', en:'The dark closed in before you could reach the light.' },
+  lose_hunter_title: { ru:'Охотник погиб', en:'The hunter is dead' },
+  lose_hunter_text: { ru:'Волки добрались до Грома, пока ты был слишком далеко, чтобы его защитить.', en:'The wolves reached Grom while you were too far away to protect him.' }
 };
 function t(key, vars){
   const entry = I18N[key];
@@ -1218,7 +1223,10 @@ function refreshWeaponMesh(){
   rightHand.add(weaponMesh);
 }
 
-// hunter: injured, lying on the ground near the dead fire pit
+// hunter: injured, lying on the ground near the dead fire pit - can't move or fight back,
+// so wolves/the bear are free to target him instead of the player (see updateHostileGroup)
+let hunterHp = 100;
+const HUNTER_MAX_HP = 100, HUNTER_R = 1.6;
 const hunterMesh = buildPerson(0x5c4a34, 0xe8c98a);
 hunterMesh.rotation.z = Math.PI/2; // lay the body down
 hunterMesh.rotation.y = 0.5;
@@ -2368,15 +2376,26 @@ function updateHostileGroup(list, dt){
   for(const w of list){
     if(!w.alive) continue;
     if(w.hitCd > 0) w.hitCd -= dt;
-    const d = dist(player.x,player.z,w.x,w.z);
+    // the hunter can't move or defend himself, so whichever of him/the player is nearer becomes the target
+    const dPlayer = dist(player.x,player.z,w.x,w.z);
+    const dHunter = hunterHp > 0 ? dist(HUNTER_POS.x,HUNTER_POS.z,w.x,w.z) : Infinity;
+    const targetHunter = dHunter < dPlayer;
+    const tx = targetHunter ? HUNTER_POS.x : player.x, tz = targetHunter ? HUNTER_POS.z : player.z;
+    const d = targetHunter ? dHunter : dPlayer;
     let speed = w.speed;
     if(d < 16) speed = w.speed * 1.35;
-    moveTowardsAvoiding(w, player.x, player.z, speed, dt);
+    moveTowardsAvoiding(w, tx, tz, speed, dt);
 
-    if(d < player.r + w.r - 0.3 && w.hitCd <= 0){
-      player.hp = clamp(player.hp - w.dmg, 0, player.maxhp);
-      w.hitCd = 0.9;
-      if(player.hp<=0) doLose();
+    if(w.hitCd <= 0){
+      if(targetHunter && d < HUNTER_R + w.r - 0.3){
+        hunterHp = clamp(hunterHp - w.dmg, 0, HUNTER_MAX_HP);
+        w.hitCd = 0.9;
+        if(hunterHp<=0) doLose('hunter_died');
+      } else if(!targetHunter && d < player.r + w.r - 0.3){
+        player.hp = clamp(player.hp - w.dmg, 0, player.maxhp);
+        w.hitCd = 0.9;
+        if(player.hp<=0) doLose();
+      }
     }
   }
 }
@@ -2666,6 +2685,7 @@ function update(dt){
   syncMeshes();
   updateCamera(dt);
   updateWolfHpBars();
+  updateHunterHpBar();
   updateHunterHint();
 }
 
@@ -2709,6 +2729,21 @@ function updateWolfHpBars(){
     w.hpEl.style.top = sy+'px';
     w.hpEl.querySelector('.wolf-hp-fill').style.width = (w.hp/w.maxhp*100)+'%';
   }
+}
+
+function updateHunterHpBar(){
+  const bar = document.getElementById('hunterHpBar');
+  const threatened = hunterHp < HUNTER_MAX_HP || wolves.some(w=>w.alive) || nightActive || (bear&&bear.alive);
+  if(!started || hunterHp<=0 || !threatened){ bar.style.display='none'; return; }
+  const v = new THREE.Vector3(HUNTER_POS.x, 1.8, HUNTER_POS.z);
+  v.project(camera);
+  if(v.z > 1){ bar.style.display='none'; return; }
+  const sx = (v.x*0.5+0.5) * stageEl.clientWidth - 17;
+  const sy = (-v.y*0.5+0.5) * stageEl.clientHeight;
+  bar.style.display='block';
+  bar.style.left = sx+'px';
+  bar.style.top = sy+'px';
+  document.getElementById('hunterHpFill').style.width = (hunterHp/HUNTER_MAX_HP*100)+'%';
 }
 
 function updateHpBar(){
@@ -2763,6 +2798,9 @@ function doLose(reason){
   } else if(reason === 'poison'){
     document.getElementById('loseTitle').textContent = t("lose_poison_title");
     document.getElementById('loseText').textContent = t("lose_poison_text");
+  } else if(reason === 'hunter_died'){
+    document.getElementById('loseTitle').textContent = t("lose_hunter_title");
+    document.getElementById('loseText').textContent = t("lose_hunter_text");
   } else {
     document.getElementById('loseTitle').textContent = t("lose_forest_title");
     document.getElementById('loseText').textContent = t("lose_forest_text");
