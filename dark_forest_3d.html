@@ -1526,7 +1526,7 @@ function spawnWolves(){
   for(let i=0;i<3;i++){
     const s = randomFreeSpot(2.0, placed);
     placed.push(s);
-    wolves.push(spawnHostile('wolf', s, { hp:30, maxhp:30, speed:rand(4.5,5.8), r:1.4, dmg:8, isQuestWolf:true }));
+    wolves.push(spawnHostile('wolf', s, { hp:30, maxhp:30, speed:rand(7.5,9.5), r:1.4, dmg:8, isQuestWolf:true }));
   }
 }
 
@@ -1540,7 +1540,7 @@ function startNightSiege(){
   for(let i=0;i<count;i++){
     const s = randomFreeSpot(2.0, placed);
     placed.push(s);
-    nightWolves.push(spawnHostile('wolf', s, { hp:26, maxhp:26, speed:rand(5.2,6.4), r:1.4, dmg:8, isQuestWolf:false }));
+    nightWolves.push(spawnHostile('wolf', s, { hp:26, maxhp:26, speed:rand(8.5,10.5), r:1.4, dmg:8, isQuestWolf:false }));
   }
   showToast(t("toast_night_start"));
 }
